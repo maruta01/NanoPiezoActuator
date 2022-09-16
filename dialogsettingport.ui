@@ -6,30 +6,133 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>275</width>
-    <height>122</height>
+    <width>272</width>
+    <height>254</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>Dialog</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_2">
+  <layout class="QVBoxLayout" name="verticalLayout">
    <item>
-    <layout class="QVBoxLayout" name="verticalLayout">
+    <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <layout class="QHBoxLayout" name="horizontalLayout">
-       <item>
-        <widget class="QLabel" name="label">
-         <property name="text">
-          <string>Serial port :</string>
-         </property>
-        </widget>
-       </item>
-       <item>
-        <widget class="QComboBox" name="com_comboBox"/>
-       </item>
-      </layout>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>RS232 Configuration</string>
+       </property>
+       <layout class="QVBoxLayout" name="verticalLayout_3">
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QLabel" name="com_label">
+            <property name="text">
+             <string>Serial port :</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QComboBox" name="com_comboBox"/>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_3">
+          <item>
+           <widget class="QLabel" name="buad_rate_label">
+            <property name="text">
+             <string>Baud rate</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="buad_rate_val_label">
+            <property name="text">
+             <string>19200</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_4">
+          <item>
+           <widget class="QLabel" name="data_bits_label">
+            <property name="text">
+             <string>Data bits</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="data_bits_val_label">
+            <property name="text">
+             <string>8</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_5">
+          <item>
+           <widget class="QLabel" name="stop_bits_label">
+            <property name="text">
+             <string>Stop bits</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="stop_bits_val_label">
+            <property name="text">
+             <string>1</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_6">
+          <item>
+           <widget class="QLabel" name="parity_label">
+            <property name="text">
+             <string>Parity</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="parity_val_label">
+            <property name="text">
+             <string>none</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+        <item>
+         <layout class="QHBoxLayout" name="horizontalLayout_7">
+          <item>
+           <widget class="QLabel" name="flow_control_label">
+            <property name="text">
+             <string>Flow Control</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QLabel" name="flow_control_val_label">
+            <property name="text">
+             <string>Xon/Xoff</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </item>
+       </layout>
+      </widget>
      </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_8">
      <item>
       <widget class="QDialogButtonBox" name="buttonBox">
        <property name="orientation">

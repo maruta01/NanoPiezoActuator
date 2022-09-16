@@ -25,6 +25,7 @@ public:
         QString stringStopBits;
         QSerialPort::FlowControl flowControl;
         QString stringFlowControl;
+        bool settingStatus=false;
     };
 
 

@@ -20,7 +20,11 @@ public:
 private slots:
     void initActionsConnections();
 
-    void on_DisconnectPortButton_clicked();
+    void on_ConnectPortButton_clicked();
+    void InitContorllerConnection();
+    void on_Received_Data();
+    void GetContorllerName();
+    void GetContorllerJog();
 
 private:
     Ui::MainWindow *ui;
