@@ -2,6 +2,7 @@
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include <iostream>
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -25,6 +26,12 @@ private slots:
     void on_Received_Data();
     void GetContorllerName();
     void GetContorllerJog();
+    void GetContorllerId();
+    void GetCurrentPosition();
+    void GetSerailportName();
+    QByteArray WriteDataToSerialResponse(QByteArray command);
+
+    void on_contorller_id_comboBox_currentIndexChanged(int index);
 
 private:
     Ui::MainWindow *ui;

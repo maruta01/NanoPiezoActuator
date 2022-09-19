@@ -11,6 +11,7 @@ using namespace std;
 
 QSerialPort* serial;
 bool serial_connect = false;
+std::map<int, string> controller_map;
 
 struct ascii_command_set {
     // Command Set Summary (User Manual : http://shorturl.at/prXYZ
@@ -56,13 +57,19 @@ MainWindow::~MainWindow()
     serial->close();
 }
 
+void MainWindow::GetSerailportName(){
+
+}
 
 void MainWindow::initActionsConnections()
 {
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::close);
     connect(ui->actionConfigure, &QAction::triggered, ui_settings, &DialogSettingPort::show);
+    connect(ui->actionConfigure,SIGNAL(clicked()),SLOT(GetSerailportName()));
 //    connect(serial, SIGNAL(readyRead()), this, SLOT(on_Received_Data()));
 }
+
+
 
 void MainWindow::on_ConnectPortButton_clicked()
 {
@@ -77,8 +84,9 @@ void MainWindow::on_ConnectPortButton_clicked()
         if (serial->open(QIODevice::ReadWrite)) {
             ui->ConnectPortButton->setText("Disconnect");
             serial_connect=true;
-            QMessageBox::information(this,QString("Connected"),QString("Connected to "+p.name));
             InitContorllerConnection();
+            QMessageBox::information(this,QString("Connected"),QString("Connected to "+p.name));
+            ui->serialport_name_label->setText(p.name);
         } else {
             QMessageBox::critical(this, QString("Error"), serial->errorString());
         }
@@ -90,26 +98,58 @@ void MainWindow::on_ConnectPortButton_clicked()
 
 void MainWindow::InitContorllerConnection()
 {
+    GetContorllerId();
     GetContorllerName();
-    GetContorllerJog();
+    GetCurrentPosition();
+//    GetContorllerJog();
 }
 
 void MainWindow::GetContorllerName(){
-    serial->write("0" + ascii_command_set().ACTUATOR_DESCRIPTION + "?\r");
-    serial->flush();
-    serial->waitForBytesWritten(50);
-    serial->waitForReadyRead(50);
-    QByteArray data = serial->readAll();
+    int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
+    ui->name_textBrowser->setText(QString::fromStdString(controller_map.at(contoller_id)));
 }
+
+void MainWindow::GetContorllerId(){
+    QByteArray res_data;
+    for(int num=0;num<=2;num++){
+        qDebug() << "num = "<<num;
+        res_data = WriteDataToSerialResponse(QByteArray::number(num)[0] + ascii_command_set().ACTUATOR_DESCRIPTION + "?");
+        if(res_data.length()>1){
+            QList controller_name = res_data.split('?');
+            controller_map.insert({ num, controller_name[1].toStdString() });
+            ui->contorller_id_comboBox->addItem(QString::number(num));
+        }
+    }
+}
+void MainWindow::GetCurrentPosition(){
+    int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
+    QByteArray res_data = WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().READ_CURRENT_POSITION + "?");
+    if(res_data.length()>1){
+        QList controller_name = res_data.split('?');
+        controller_name[1] = controller_name[1].replace(QByteArray("\n"), QByteArray(""));
+        controller_name[1] = controller_name[1].replace(QByteArray("\r"), QByteArray(""));
+        ui->current_position_textBrowser->setText(controller_name[1]);
+    }
+}
+
+
+
+QByteArray MainWindow::WriteDataToSerialResponse(QByteArray command){
+    serial->write(command+"\r");
+    serial->flush();
+    serial->waitForBytesWritten(100);
+    serial->waitForReadyRead(100);
+    return serial->readAll();
+}
+
+
 
 void MainWindow::GetContorllerJog(){
 
     serial->write("0" + ascii_command_set().CONTORL_JOG + "?\r");
     serial->flush();
     serial->waitForBytesWritten(50);
-    serial->waitForReadyRead(50);
-    qDebug() << serial->readAll();;
-
+    serial->waitForReadyRead(100);
 }
 
 
@@ -120,4 +160,11 @@ void MainWindow::on_Received_Data()
 }
 
 
+
+
+void MainWindow::on_contorller_id_comboBox_currentIndexChanged(int index)
+{
+    GetContorllerName();
+    GetCurrentPosition();
+}
 

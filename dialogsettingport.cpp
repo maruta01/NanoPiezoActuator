@@ -16,7 +16,13 @@ DialogSettingPort::DialogSettingPort(QWidget *parent) :
 
 DialogSettingPort::~DialogSettingPort()
 {
-    delete ui;
+    if (current_settings.settingStatus){
+        delete ui;
+    }
+    else{
+        show();
+    }
+
 }
 
 DialogSettingPort::Settings DialogSettingPort::settings() const

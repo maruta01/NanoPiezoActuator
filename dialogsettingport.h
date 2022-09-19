@@ -33,6 +33,7 @@ public:
     ~DialogSettingPort();
 
     Settings settings() const;
+    Ui::DialogSettingPort *ui;
 
 private slots:
     void on_buttonBox_accepted();
@@ -42,7 +43,7 @@ private:
     void updateSettings();
 
 private:
-    Ui::DialogSettingPort *ui;
+
     Settings current_settings;
 };
 
