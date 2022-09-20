@@ -35,7 +35,7 @@ public:
     Settings settings() const;
     Ui::DialogSettingPort *ui;
 
-private slots:
+public slots:
     void on_buttonBox_accepted();
 
 
