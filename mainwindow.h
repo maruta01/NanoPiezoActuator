@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <iostream>
+#include "wokerthead.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -18,18 +19,22 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+    wokerthead *wThread;
+
 public slots:
     void GetCurrentPosition();
+    void GetControllerStatus2(bool);
+    void onNumChange(int);
 
 private slots:
+
     void initActionsConnections();
 
     void on_ConnectPortButton_clicked();
     void InitContorllerConnection();
-    void on_Received_Data();
     void GetContorllerName();
     void GetContorllerJog();
-    bool GetContorllerId();
+    int GetContorllerId();
 
     void GetSerailportName();
     void GetControllerStatus();

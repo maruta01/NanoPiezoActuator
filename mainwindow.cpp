@@ -14,6 +14,7 @@ using namespace std;
 QSerialPort* serial;
 bool serial_connect = false;
 std::map<int, string> controller_map;
+wokerthead* wThead = new wokerthead();
 
 struct ascii_command_set {
     // Command Set Summary (User Manual : http://shorturl.at/prXYZ
@@ -50,6 +51,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     serial = new QSerialPort(this);
     initActionsConnections();
+
+
 }
 
 MainWindow::~MainWindow()
@@ -67,8 +70,8 @@ void MainWindow::initActionsConnections()
 {
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::close);
     connect(ui->actionConfigure, &QAction::triggered, ui_settings, &DialogSettingPort::show);
-//    connect(ui->actionConfigure,SIGNAL(clicked()),SLOT(GetSerailportName()));
-//    connect(serial, SIGNAL(readyRead()), this, SLOT(GetCurrentPosition()));
+    connect(ui->pushButton,SIGNAL(clicked(bool)),this,SLOT(GetControllerStatus2(bool)));
+//    connect(wThead,SIGNAL(NumberChanged(int)),this,SLOT(onNumChange(int)));
 
 }
 
@@ -103,7 +106,6 @@ void MainWindow::InitContorllerConnection()
         QMessageBox::information(this,QString("Connected"),QString("NanoPZ Actuator Connected"));
         GetContorllerName();
         GetCurrentPosition();
-
 //        wokerthead mThread;
 //        mThread.name="test1";
 //        mThread.start();
@@ -120,14 +122,15 @@ void MainWindow::GetContorllerName(){
     ui->name_textBrowser->setText(QString::fromStdString(controller_map.at(contoller_id)));
 }
 
-bool MainWindow::GetContorllerId(){
+int MainWindow::GetContorllerId(){
     QByteArray res_data;
     ui->contorller_id_comboBox->clear();
-    int num_controller=false;
-    for(int num=0;num<=2;num++){
+    int num_controller=0;
+    for(int num=0;num<=3;num++){
         res_data = WriteDataToSerialResponse(QByteArray::number(num)[0] + ascii_command_set().ACTUATOR_DESCRIPTION + "?");
+        qDebug()<<"GetContorllerId = "<<num<<"/"<< res_data;
         if(!res_data.isEmpty()){
-            num_controller = true;
+            num_controller++;
             QList controller_name = res_data.split('?');
             controller_map.insert({ num, controller_name[1].toStdString() });
             ui->contorller_id_comboBox->addItem(QString::number(num));
@@ -165,12 +168,26 @@ void MainWindow::GetControllerStatus(){
 }
 
 
+void MainWindow::GetControllerStatus2(bool open){
+    qDebug()<<"click";
+    wThead->serial = serial;
+    wThead->start();
+
+}
+
+void MainWindow::onNumChange(int value)
+{
+    ui->label->setText(QString::number(value));
+}
+
+
 
 QByteArray MainWindow::WriteDataToSerialResponse(QByteArray command){
     serial->write(command+"\r");
+    qDebug()<<"commeand= "<<command;
     serial->flush();
     serial->waitForBytesWritten(100);
-    serial->waitForReadyRead(100);
+    serial->waitForReadyRead(500);
     return serial->readAll().replace(QByteArray("\n"), QByteArray("")).replace(QByteArray("\r"), QByteArray("")).replace(QByteArray(" "), QByteArray(""));
 }
 
@@ -183,14 +200,6 @@ void MainWindow::GetContorllerJog(){
     serial->waitForBytesWritten(100);
     serial->waitForReadyRead(100);
 }
-
-
-void MainWindow::on_Received_Data()
-{
-    //RX
-    qDebug() << serial->readAll();;
-}
-
 
 
 
@@ -227,9 +236,8 @@ void MainWindow::on_add_relative_pushButton_clicked()
     int increase_value = ui->increament_spinBox->value();
 
     if(current_status == "Motor ON"){
-        qDebug() << "increase_value = "<<increase_value;
+        qDebug() << "move+ = "<<increase_value;
         WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().POSITION_RELATIVE+QByteArray::number(increase_value));
-        GetCurrentPosition();
     }
 }
 
@@ -241,10 +249,10 @@ void MainWindow::on_del_relative_pushButton_clicked()
     int decrease_value = ui->increament_spinBox->value();
 
     if(current_status == "Motor ON"){
-        qDebug() << "increase_value = "<<decrease_value;
+        qDebug() << "move- = "<<decrease_value;
         WriteDataToSerialResponse(QByteArray::number(contoller_id)+ascii_command_set().POSITION_RELATIVE+"-"+QByteArray::number(decrease_value));
-        GetCurrentPosition();
     }
 
 }
+
 
