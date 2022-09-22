@@ -33,6 +33,7 @@ DialogSettingPort::Settings DialogSettingPort::settings() const
 void DialogSettingPort::on_buttonBox_accepted()
 {
     updateSettings();
+    emit SerialPortChanged(ui->com_comboBox->currentText());
     hide();
 }
 

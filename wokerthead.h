@@ -20,6 +20,7 @@ signals:
     void NumberChanged(int);
 
 private:
+    int value_current=0;
     int GetCurrentPosition(int);
     QByteArray WriteDataToSerialResponse(QByteArray);
 };

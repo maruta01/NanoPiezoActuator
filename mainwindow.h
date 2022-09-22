@@ -24,6 +24,7 @@ public:
 public slots:
     void GetCurrentPosition();
     void onNumChange(int);
+    void GetSerialNameChange(QString);
 
 private slots:
 
@@ -35,7 +36,6 @@ private slots:
     void GetContorllerJog();
     int GetContorllerId();
     void OnstartGetCurrentPosition();
-    void GetSerailportName();
     void GetControllerStatus();
     QByteArray WriteDataToSerialResponse(QByteArray command);
 

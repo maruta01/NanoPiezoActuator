@@ -1,9 +1,6 @@
 #include "wokerthead.h"
 #include <QtCore>
 
-int value_current=0;
-
-
 WorkerThread::WorkerThread(QObject *parent):
     QThread(parent)
 {
@@ -12,7 +9,7 @@ WorkerThread::WorkerThread(QObject *parent):
 
 void WorkerThread::run()
 {
-    int value = 0;
+    int value = value_current;
     while(controller_id>=0){
         if(stop) break;
         value = GetCurrentPosition(controller_id);
@@ -34,18 +31,16 @@ QByteArray WorkerThread::WriteDataToSerialResponse(QByteArray command){
 
 int WorkerThread::GetCurrentPosition(int contoller_id){
     int value=value_current;
-    if (!serial->waitForReadyRead(200)){
-        QByteArray res_data = WriteDataToSerialResponse(QByteArray::number(contoller_id) + "TP?");
-        if(!res_data.isEmpty()){
-            QList controller_name = res_data.split('?');
-            qDebug()<<"controller_position= "<<controller_name[1];
-            value = controller_name[1].toInt();
-            qDebug()<<"value PT= "<<value;
+    QByteArray res_data = WriteDataToSerialResponse(QByteArray::number(contoller_id) + "TP?");
+    if(!res_data.isEmpty()){
+        QList controller_name = res_data.split('?');
+        qDebug()<<"controller_position= "<<controller_name[1];
+        value = controller_name[1].toInt();
+        qDebug()<<"value PT= "<<value;
 
-        }
-        if(value_current != value){
-            value_current = value;
-        }
+    }
+    if(value_current != value){
+        value_current = value;
     }
     return value_current;
 

@@ -52,7 +52,10 @@ MainWindow::MainWindow(QWidget *parent)
     serial = new QSerialPort(this);
     initActionsConnections();
     workerthread = new WorkerThread(this);
+
     connect(workerthread,SIGNAL(NumberChanged(int)),this,SLOT(onNumChange(int)));
+    connect(ui_settings,SIGNAL(SerialPortChanged(QString)),this,SLOT(GetSerialNameChange(QString)));
+
 
 
 }
@@ -60,13 +63,9 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     workerthread->stop = true;
+    serial->close();
     delete ui;
     delete ui_settings;
-    serial->close();
-}
-
-void MainWindow::GetSerailportName(){
-
 }
 
 void MainWindow::initActionsConnections()
@@ -79,25 +78,35 @@ void MainWindow::initActionsConnections()
 
 void MainWindow::on_ConnectPortButton_clicked()
 {
-    const DialogSettingPort::Settings p = ui_settings->settings();
-    if(p.settingStatus){
-        serial->setPortName(p.name);
-        serial->setBaudRate(p.baudRate);
-        serial->setDataBits(p.dataBits);
-        serial->setParity(p.parity);
-        serial->setStopBits(p.stopBits);
-        serial->setFlowControl(p.flowControl);
-        if (serial->open(QIODevice::ReadWrite)) {
-            ui->ConnectPortButton->setText("Disconnect");
-            serial_connect=true;
-            InitContorllerConnection();
-        } else {
-            QMessageBox::critical(this, QString("Error"), serial->errorString());
+    if(ui->ConnectPortButton->text()=="Connect"){
+        const DialogSettingPort::Settings p = ui_settings->settings();
+        if(p.settingStatus){
+            serial->setPortName(p.name);
+            serial->setBaudRate(p.baudRate);
+            serial->setDataBits(p.dataBits);
+            serial->setParity(p.parity);
+            serial->setStopBits(p.stopBits);
+            serial->setFlowControl(p.flowControl);
+            if (serial->open(QIODevice::ReadWrite)) {
+                ui->ConnectPortButton->setText("Disconnect");
+                serial_connect=true;
+                workerthread->stop = false;
+                InitContorllerConnection();
+            } else {
+                QMessageBox::critical(this, QString("Error"), serial->errorString());
+            }
+        }
+        else{
+            serial_connect=false;
         }
     }
     else{
-        serial_connect=false;
+        workerthread->stop = true;
+        serial->close();
+        ui->ConnectPortButton->setText("Connect");
+
     }
+
 }
 
 void MainWindow::InitContorllerConnection()
@@ -171,8 +180,12 @@ void MainWindow::OnstartGetCurrentPosition(){
 
 void MainWindow::onNumChange(int value)
 {
-//    ui->label->setText(QString::number(value));
     ui->current_position_textBrowser->setText(QString::number(value));
+}
+
+void MainWindow::GetSerialNameChange(QString serial_name)
+{
+    ui->serialport_name_label->setText(serial_name);
 }
 
 
@@ -180,18 +193,15 @@ void MainWindow::onNumChange(int value)
 QByteArray MainWindow::WriteDataToSerialResponse(QByteArray command){
     qDebug()<<"commeand= "<<command;
     serial->write(command+"\r");
-    while(!serial->waitForBytesWritten(100)){
-        usleep(100);
+    while(!serial->waitForBytesWritten(200)){
         qDebug()<<"whait write ..";
     }
 
-    while(serial->waitForReadyRead(100)){
-        usleep(100);
+    while(serial->waitForReadyRead(200)){
         qDebug()<<"whait read ..";
     }
     serial->flush();
     return serial->readAll().replace(QByteArray("\n"), QByteArray("")).replace(QByteArray("\r"), QByteArray("")).replace(QByteArray(" "), QByteArray(""));;
-
 }
 
 

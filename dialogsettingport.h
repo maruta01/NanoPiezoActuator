@@ -35,6 +35,9 @@ public:
     Settings settings() const;
     Ui::DialogSettingPort *ui;
 
+signals:
+    void SerialPortChanged(QString);
+
 public slots:
     void on_buttonBox_accepted();
 
