@@ -19,8 +19,8 @@
      <rect>
       <x>11</x>
       <y>11</y>
-      <width>503</width>
-      <height>420</height>
+      <width>521</width>
+      <height>411</height>
      </rect>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
@@ -53,6 +53,19 @@
            <string>Connect</string>
           </property>
          </widget>
+        </item>
+        <item>
+         <spacer name="horizontalSpacer">
+          <property name="orientation">
+           <enum>Qt::Horizontal</enum>
+          </property>
+          <property name="sizeHint" stdset="0">
+           <size>
+            <width>40</width>
+            <height>20</height>
+           </size>
+          </property>
+         </spacer>
         </item>
        </layout>
       </widget>
@@ -91,26 +104,26 @@
           <item>
            <widget class="QComboBox" name="contorller_id_comboBox"/>
           </item>
-         </layout>
-        </item>
-        <item>
-         <layout class="QHBoxLayout" name="horizontalLayout_4">
           <item>
-           <widget class="QLabel" name="name_label">
-            <property name="text">
-             <string>Nmae</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QTextBrowser" name="name_textBrowser">
-            <property name="maximumSize">
-             <size>
-              <width>16777215</width>
-              <height>30</height>
-             </size>
-            </property>
-           </widget>
+           <layout class="QHBoxLayout" name="horizontalLayout_4">
+            <item>
+             <widget class="QLabel" name="name_label">
+              <property name="text">
+               <string>Nmae</string>
+              </property>
+             </widget>
+            </item>
+            <item>
+             <widget class="QTextBrowser" name="name_textBrowser">
+              <property name="maximumSize">
+               <size>
+                <width>16777215</width>
+                <height>30</height>
+               </size>
+              </property>
+             </widget>
+            </item>
+           </layout>
           </item>
          </layout>
         </item>
@@ -140,6 +153,13 @@
             </property>
            </widget>
           </item>
+          <item>
+           <widget class="QPushButton" name="set_zero_pushButton">
+            <property name="text">
+             <string>SET ZERO</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </item>
         <item>
@@ -147,32 +167,19 @@
           <property name="orientation">
            <enum>Qt::Vertical</enum>
           </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::Preferred</enum>
+          </property>
           <property name="sizeHint" stdset="0">
            <size>
             <width>20</width>
-            <height>40</height>
+            <height>24</height>
            </size>
           </property>
          </spacer>
         </item>
         <item>
          <layout class="QHBoxLayout" name="horizontalLayout_6">
-          <item>
-           <spacer name="horizontalSpacer_3">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::MinimumExpanding</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
           <item>
            <widget class="QLabel" name="motor_status_label">
             <property name="text">
@@ -191,29 +198,13 @@
            </widget>
           </item>
           <item>
-           <spacer name="horizontalSpacer_4">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
+           <widget class="QPushButton" name="motor_pushButton">
+            <property name="text">
+             <string>Motor: NO</string>
             </property>
-            <property name="sizeType">
-             <enum>QSizePolicy::MinimumExpanding</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
+           </widget>
           </item>
          </layout>
-        </item>
-        <item>
-         <widget class="QPushButton" name="motor_pushButton">
-          <property name="text">
-           <string>Motor: NO</string>
-          </property>
-         </widget>
         </item>
         <item>
          <widget class="QGroupBox" name="groupBox_2">
@@ -301,6 +292,43 @@
          </widget>
         </item>
        </layout>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+   <widget class="QGroupBox" name="groupBox_3">
+    <property name="geometry">
+     <rect>
+      <x>40</x>
+      <y>450</y>
+      <width>381</width>
+      <height>131</height>
+     </rect>
+    </property>
+    <property name="title">
+     <string>Jog</string>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout_4">
+     <item>
+      <widget class="QScrollBar" name="horizontalScrollBar">
+       <property name="maximum">
+        <number>14</number>
+       </property>
+       <property name="pageStep">
+        <number>1</number>
+       </property>
+       <property name="value">
+        <number>7</number>
+       </property>
+       <property name="tracking">
+        <bool>true</bool>
+       </property>
+       <property name="orientation">
+        <enum>Qt::Horizontal</enum>
+       </property>
+       <property name="invertedAppearance">
+        <bool>true</bool>
+       </property>
       </widget>
      </item>
     </layout>

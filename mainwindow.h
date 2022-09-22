@@ -47,6 +47,8 @@ private slots:
 
     void on_contorller_id_comboBox_currentTextChanged(const QString &arg1);
 
+    void on_set_zero_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     DialogSettingPort *ui_settings = nullptr;

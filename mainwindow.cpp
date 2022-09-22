@@ -104,9 +104,7 @@ void MainWindow::on_ConnectPortButton_clicked()
         workerthread->stop = true;
         serial->close();
         ui->ConnectPortButton->setText("Connect");
-
     }
-
 }
 
 void MainWindow::InitContorllerConnection()
@@ -119,8 +117,6 @@ void MainWindow::InitContorllerConnection()
     else{
         QMessageBox::warning(this, QString("Error"), "don't find the controller! try to re-plug the serial port or check the controller.");
     }
-
-
 }
 
 void MainWindow::GetContorllerName(){
@@ -193,15 +189,14 @@ void MainWindow::GetSerialNameChange(QString serial_name)
 QByteArray MainWindow::WriteDataToSerialResponse(QByteArray command){
     qDebug()<<"commeand= "<<command;
     serial->write(command+"\r");
-    while(!serial->waitForBytesWritten(200)){
+    while(!serial->waitForBytesWritten(300)){
         qDebug()<<"whait write ..";
     }
 
-    while(serial->waitForReadyRead(200)){
+    while(serial->waitForReadyRead(300)){
         qDebug()<<"whait read ..";
     }
-    serial->flush();
-    return serial->readAll().replace(QByteArray("\n"), QByteArray("")).replace(QByteArray("\r"), QByteArray("")).replace(QByteArray(" "), QByteArray(""));;
+    return serial->readAll().replace(QByteArray("\n"), QByteArray("")).replace(QByteArray("\r"), QByteArray("")).replace(QByteArray(" "), QByteArray(""));
 }
 
 
@@ -226,6 +221,7 @@ void MainWindow::on_motor_pushButton_pressed()
     else if(current_status == "Motor OFF" && curent_button == "Motor ON"){
         WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().MOTOR_ON);
     }
+    qDebug()<<"GGGGG";
     GetControllerStatus();
 }
 
@@ -257,11 +253,24 @@ void MainWindow::on_del_relative_pushButton_clicked()
 }
 
 
-
 void MainWindow::on_contorller_id_comboBox_currentTextChanged(const QString &arg1)
 {
         GetContorllerName();
         GetControllerStatus();
         workerthread->controller_id = arg1.toInt();
+}
+
+
+void MainWindow::on_set_zero_pushButton_clicked()
+{
+    QMessageBox::StandardButton reply;
+     reply = QMessageBox::question(this, "Warning", "Set current position to zero?",
+                                   QMessageBox::Yes|QMessageBox::No);
+     if (reply == QMessageBox::Yes) {
+         int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
+         WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().ZERO_POSITION);
+     }
+
+
 }
 

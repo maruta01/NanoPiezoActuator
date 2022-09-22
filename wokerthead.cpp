@@ -43,7 +43,4 @@ int WorkerThread::GetCurrentPosition(int contoller_id){
         value_current = value;
     }
     return value_current;
-
-
-
 }
