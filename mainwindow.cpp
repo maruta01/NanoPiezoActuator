@@ -8,13 +8,13 @@
 #include <unistd.h>
 #include <QtCore/QCoreApplication>
 #include "wokerthead.h"
+#include <unistd.h>
 
 using namespace std;
 
 QSerialPort* serial;
 bool serial_connect = false;
 std::map<int, string> controller_map;
-wokerthead* wThead = new wokerthead();
 
 struct ascii_command_set {
     // Command Set Summary (User Manual : http://shorturl.at/prXYZ
@@ -51,12 +51,15 @@ MainWindow::MainWindow(QWidget *parent)
     ui->setupUi(this);
     serial = new QSerialPort(this);
     initActionsConnections();
+    workerthread = new WorkerThread(this);
+    connect(workerthread,SIGNAL(NumberChanged(int)),this,SLOT(onNumChange(int)));
 
 
 }
 
 MainWindow::~MainWindow()
 {
+    workerthread->stop = true;
     delete ui;
     delete ui_settings;
     serial->close();
@@ -70,9 +73,6 @@ void MainWindow::initActionsConnections()
 {
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::close);
     connect(ui->actionConfigure, &QAction::triggered, ui_settings, &DialogSettingPort::show);
-    connect(ui->pushButton,SIGNAL(clicked(bool)),this,SLOT(GetControllerStatus2(bool)));
-//    connect(wThead,SIGNAL(NumberChanged(int)),this,SLOT(onNumChange(int)));
-
 }
 
 
@@ -105,16 +105,13 @@ void MainWindow::InitContorllerConnection()
     if(GetContorllerId()){
         QMessageBox::information(this,QString("Connected"),QString("NanoPZ Actuator Connected"));
         GetContorllerName();
-        GetCurrentPosition();
-//        wokerthead mThread;
-//        mThread.name="test1";
-//        mThread.start();
+        OnstartGetCurrentPosition();
     }
     else{
         QMessageBox::warning(this, QString("Error"), "don't find the controller! try to re-plug the serial port or check the controller.");
     }
 
-//    GetContorllerJog();
+
 }
 
 void MainWindow::GetContorllerName(){
@@ -163,34 +160,39 @@ void MainWindow::GetControllerStatus(){
             ui->motor_pushButton->setText("Motor ON");
             ui->motor_status_textBrowser->setText("Motor OFF");
         }
-
     }
 }
 
-
-void MainWindow::GetControllerStatus2(bool open){
-    qDebug()<<"click";
-    wThead->serial = serial;
-    wThead->start();
-
+void MainWindow::OnstartGetCurrentPosition(){
+    workerthread->serial = serial;
+    workerthread->controller_id = ui->contorller_id_comboBox->currentText().toInt();
+    workerthread->start();
 }
 
 void MainWindow::onNumChange(int value)
 {
-    ui->label->setText(QString::number(value));
+//    ui->label->setText(QString::number(value));
+    ui->current_position_textBrowser->setText(QString::number(value));
 }
 
 
 
 QByteArray MainWindow::WriteDataToSerialResponse(QByteArray command){
-    serial->write(command+"\r");
     qDebug()<<"commeand= "<<command;
-    serial->flush();
-    serial->waitForBytesWritten(100);
-    serial->waitForReadyRead(500);
-    return serial->readAll().replace(QByteArray("\n"), QByteArray("")).replace(QByteArray("\r"), QByteArray("")).replace(QByteArray(" "), QByteArray(""));
-}
+    serial->write(command+"\r");
+    while(!serial->waitForBytesWritten(100)){
+        usleep(100);
+        qDebug()<<"whait write ..";
+    }
 
+    while(serial->waitForReadyRead(100)){
+        usleep(100);
+        qDebug()<<"whait read ..";
+    }
+    serial->flush();
+    return serial->readAll().replace(QByteArray("\n"), QByteArray("")).replace(QByteArray("\r"), QByteArray("")).replace(QByteArray(" "), QByteArray(""));;
+
+}
 
 
 void MainWindow::GetContorllerJog(){
@@ -199,17 +201,6 @@ void MainWindow::GetContorllerJog(){
     serial->flush();
     serial->waitForBytesWritten(100);
     serial->waitForReadyRead(100);
-}
-
-
-
-void MainWindow::on_contorller_id_comboBox_currentIndexChanged(int index)
-{
-    GetContorllerName();
-    GetCurrentPosition();
-    GetControllerStatus();
-
-
 }
 
 
@@ -255,4 +246,12 @@ void MainWindow::on_del_relative_pushButton_clicked()
 
 }
 
+
+
+void MainWindow::on_contorller_id_comboBox_currentTextChanged(const QString &arg1)
+{
+        GetContorllerName();
+        GetControllerStatus();
+        workerthread->controller_id = arg1.toInt();
+}
 

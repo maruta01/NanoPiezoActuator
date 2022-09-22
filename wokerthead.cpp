@@ -1,28 +1,28 @@
 #include "wokerthead.h"
 #include <QtCore>
-#include <QDebug>
-#include "mainwindow.h"
 
-int value_current;
+int value_current=0;
 
-void wokerthead::run()
+
+WorkerThread::WorkerThread(QObject *parent):
+    QThread(parent)
 {
-    int value;
-    while (true) {
-        qDebug()<<"run..";
-        value = GetCurrentPosition(1);
-        this->msleep(1000);
-//        NumberChanged(value);
-    }
 
-//    main.GetCurrentPosition();
 }
 
-//void wokerthead::NumberChanged(int value){
-//    emit NumberChanged(value);
-//}
+void WorkerThread::run()
+{
+    int value = 0;
+    while(controller_id>=0){
+        if(stop) break;
+        value = GetCurrentPosition(controller_id);
+        emit NumberChanged(value);
+        this->msleep(1000);
+    }
+}
 
-QByteArray wokerthead::WriteDataToSerialResponse(QByteArray command){
+
+QByteArray WorkerThread::WriteDataToSerialResponse(QByteArray command){
     serial->write(command+"\r");
     serial->flush();
     serial->waitForBytesWritten(100);
@@ -32,7 +32,7 @@ QByteArray wokerthead::WriteDataToSerialResponse(QByteArray command){
     return "";
 }
 
-int wokerthead::GetCurrentPosition(int contoller_id){
+int WorkerThread::GetCurrentPosition(int contoller_id){
     int value=value_current;
     if (!serial->waitForReadyRead(200)){
         QByteArray res_data = WriteDataToSerialResponse(QByteArray::number(contoller_id) + "TP?");

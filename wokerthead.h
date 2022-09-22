@@ -4,12 +4,15 @@
 #include <QThread>
 #include <QtSerialPort/QSerialPort>
 
-class wokerthead : public QThread
+class WorkerThread :public QThread
 {
+    Q_OBJECT
 
 public:
+    explicit WorkerThread(QObject *parent=0);
     void run();
-
+    bool stop=false;
+    int controller_id=-1;
     QSerialPort* serial;
 
 

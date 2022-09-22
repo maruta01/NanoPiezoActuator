@@ -19,11 +19,10 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    wokerthead *wThread;
+    WorkerThread *workerthread;
 
 public slots:
     void GetCurrentPosition();
-    void GetControllerStatus2(bool);
     void onNumChange(int);
 
 private slots:
@@ -35,18 +34,18 @@ private slots:
     void GetContorllerName();
     void GetContorllerJog();
     int GetContorllerId();
-
+    void OnstartGetCurrentPosition();
     void GetSerailportName();
     void GetControllerStatus();
     QByteArray WriteDataToSerialResponse(QByteArray command);
-
-    void on_contorller_id_comboBox_currentIndexChanged(int index);
 
     void on_motor_pushButton_pressed();
 
     void on_add_relative_pushButton_clicked();
 
     void on_del_relative_pushButton_clicked();
+
+    void on_contorller_id_comboBox_currentTextChanged(const QString &arg1);
 
 private:
     Ui::MainWindow *ui;
