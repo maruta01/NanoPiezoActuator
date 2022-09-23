@@ -5,6 +5,7 @@
 #include <QSerialPortInfo>
 #include <QMessageBox>
 #include <QDebug>
+#include <QProcess>
 #include <unistd.h>
 #include <QtCore/QCoreApplication>
 #include "wokerthead.h"
@@ -50,13 +51,11 @@ MainWindow::MainWindow(QWidget *parent)
     ui_settings->show();
     ui->setupUi(this);
     serial = new QSerialPort(this);
-    initActionsConnections();
+    InitActionsConnections();
     workerthread = new WorkerThread(this);
 
-    connect(workerthread,SIGNAL(NumberChanged(int)),this,SLOT(onNumChange(int)));
+    connect(workerthread,SIGNAL(NumberChanged(int)),this,SLOT(ShowCurrentPosition(int)));
     connect(ui_settings,SIGNAL(SerialPortChanged(QString)),this,SLOT(GetSerialNameChange(QString)));
-
-
 
 }
 
@@ -68,7 +67,7 @@ MainWindow::~MainWindow()
     delete ui_settings;
 }
 
-void MainWindow::initActionsConnections()
+void MainWindow::InitActionsConnections()
 {
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::close);
     connect(ui->actionConfigure, &QAction::triggered, ui_settings, &DialogSettingPort::show);
@@ -88,10 +87,11 @@ void MainWindow::on_ConnectPortButton_clicked()
             serial->setStopBits(p.stopBits);
             serial->setFlowControl(p.flowControl);
             if (serial->open(QIODevice::ReadWrite)) {
-                ui->ConnectPortButton->setText("Disconnect");
                 serial_connect=true;
                 workerthread->stop = false;
                 InitContorllerConnection();
+                ui->ConnectPortButton->setText("Connected");
+                ui->ConnectPortButton->setEnabled(false);
             } else {
                 QMessageBox::critical(this, QString("Error"), serial->errorString());
             }
@@ -112,6 +112,7 @@ void MainWindow::InitContorllerConnection()
     if(GetContorllerId()){
         QMessageBox::information(this,QString("Connected"),QString("NanoPZ Actuator Connected"));
         GetContorllerName();
+        GetTravelLimit();
         OnstartGetCurrentPosition();
     }
     else{
@@ -129,41 +130,46 @@ int MainWindow::GetContorllerId(){
     ui->contorller_id_comboBox->clear();
     int num_controller=0;
     for(int num=0;num<=3;num++){
-        res_data = WriteDataToSerialResponse(QByteArray::number(num)[0] + ascii_command_set().ACTUATOR_DESCRIPTION + "?");
+        res_data = WriteDataToSerialResponse(QByteArray::number(num)[0] + ascii_command_set().ACTUATOR_DESCRIPTION, true);
         qDebug()<<"GetContorllerId = "<<num<<"/"<< res_data;
         if(!res_data.isEmpty()){
             num_controller++;
             QList controller_name = res_data.split('?');
-            controller_map.insert({ num, controller_name[1].toStdString() });
-            ui->contorller_id_comboBox->addItem(QString::number(num));
+            if(controller_name.length()>1)
+            {
+                controller_map.insert({ num, controller_name[1].toStdString() });
+                ui->contorller_id_comboBox->addItem(QString::number(num));
+                ShowWaringLabel(true);
+            }
+            else
+            {
+                ShowWaringLabel(false);
+            }
         }
     }
     return num_controller;
 }
 
-void MainWindow::GetCurrentPosition(){
-    int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
-    QByteArray res_data = WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().READ_CURRENT_POSITION + "?");
-    if(!res_data.isEmpty()){
-        QList controller_name = res_data.split('?');
-        qDebug()<<"controller_name"<<controller_name[1];
-        ui->current_position_textBrowser->setText(controller_name[1]);
-    }
-}
-
 void MainWindow::GetControllerStatus(){
     int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
-    QByteArray res_data = WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().CONTORLLER_STATUS + "?");
+    QByteArray res_data = WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().CONTORLLER_STATUS, true);
     if(!res_data.isEmpty()){
-        QList controller_name = res_data.split('?');
-        qDebug()<<"mo status="<<controller_name[1];
-        if(controller_name[1] == QByteArray("Q") || controller_name[1] == QByteArray("P")){
-            ui->motor_pushButton->setText("Motor OFF");
-            ui->motor_status_textBrowser->setText("Motor ON");
+        QList data_status = res_data.split('?');
+        if(data_status.length()>1){
+            qDebug()<<"mo status="<<data_status[1];
+            if(data_status[1] == QByteArray("Q") || data_status[1] == QByteArray("P"))
+            {
+                ui->motor_pushButton->setText("Motor OFF");
+                ui->motor_status_textBrowser->setText("Motor ON");
+            }
+            else{
+                ui->motor_pushButton->setText("Motor ON");
+                ui->motor_status_textBrowser->setText("Motor OFF");
+            }
+            ShowWaringLabel(true);
         }
         else{
-            ui->motor_pushButton->setText("Motor ON");
-            ui->motor_status_textBrowser->setText("Motor OFF");
+            ShowWaringLabel(false);
         }
     }
 }
@@ -174,7 +180,7 @@ void MainWindow::OnstartGetCurrentPosition(){
     workerthread->start();
 }
 
-void MainWindow::onNumChange(int value)
+void MainWindow::ShowCurrentPosition(int value)
 {
     ui->current_position_textBrowser->setText(QString::number(value));
 }
@@ -186,26 +192,72 @@ void MainWindow::GetSerialNameChange(QString serial_name)
 
 
 
-QByteArray MainWindow::WriteDataToSerialResponse(QByteArray command){
+QByteArray MainWindow::WriteDataToSerialResponse(QByteArray command,bool query=false){
+
+    if (query) command += "?";
     qDebug()<<"commeand= "<<command;
     serial->write(command+"\r");
     while(!serial->waitForBytesWritten(300)){
         qDebug()<<"whait write ..";
     }
-
+    serial->flush();
     while(serial->waitForReadyRead(300)){
         qDebug()<<"whait read ..";
     }
-    return serial->readAll().replace(QByteArray("\n"), QByteArray("")).replace(QByteArray("\r"), QByteArray("")).replace(QByteArray(" "), QByteArray(""));
+    QByteArray data_response = serial->readAll().replace(QByteArray("\n"), QByteArray("")).replace(QByteArray("\r"), QByteArray("")).replace(QByteArray(" "), QByteArray(""));
+    qDebug()<<"data_response"<<data_response;
+    return data_response;
 }
 
 
-void MainWindow::GetContorllerJog(){
-
+void MainWindow::GetContorllerJog()
+{
     serial->write("0" + ascii_command_set().CONTORL_JOG + "?\r");
     serial->flush();
     serial->waitForBytesWritten(100);
     serial->waitForReadyRead(100);
+}
+
+void MainWindow::GetTravelLimit()
+{
+    int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
+    QByteArray right_res_data = WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().SET_POSITIVE_TRAVEL_LIMIT, true);
+    if(!right_res_data.isEmpty()){
+        QList right_data = right_res_data.split('?');
+        if(right_data.length()>1)
+        {
+            ui->right_travel_limit_spinBox->setValue(right_data[1].toInt());
+            ShowWaringLabel(true);
+        }
+        else{
+            ShowWaringLabel(false);
+        }
+
+    }
+
+    QByteArray left_res_data = WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().SET_NEGATIVE_TRAVEL_LIMIT, true);
+    if(!left_res_data.isEmpty()){
+        QList left_data = left_res_data.split('?');
+        if(left_data.length()>1){
+            ui->left_travel_limit_spinBox->setValue(left_data[1].toInt());
+            ShowWaringLabel(true);
+        }
+        else{
+            ShowWaringLabel(false);
+        }
+    }
+}
+
+void MainWindow::ShowWaringLabel(bool is_access){
+    if(is_access){
+        ui->warning_label->setStyleSheet("QLabel { color : green; }");
+        ui->warning_label->setText("accessed to Nano-piezo Actuators.");
+    }
+    else{
+        ui->warning_label->setStyleSheet("QLabel { color : red; }");
+        ui->warning_label->setText("try agin!, we can't access data to Nano-piezo.");
+    }
+
 }
 
 
@@ -221,7 +273,6 @@ void MainWindow::on_motor_pushButton_pressed()
     else if(current_status == "Motor OFF" && curent_button == "Motor ON"){
         WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().MOTOR_ON);
     }
-    qDebug()<<"GGGGG";
     GetControllerStatus();
 }
 
@@ -257,6 +308,7 @@ void MainWindow::on_contorller_id_comboBox_currentTextChanged(const QString &arg
 {
         GetContorllerName();
         GetControllerStatus();
+        GetTravelLimit();
         workerthread->controller_id = arg1.toInt();
 }
 
@@ -271,6 +323,35 @@ void MainWindow::on_set_zero_pushButton_clicked()
          WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().ZERO_POSITION);
      }
 
+}
+
+
+void MainWindow::on_save_limit_pushButton_clicked()
+{
+    QMessageBox::StandardButton reply;
+     reply = QMessageBox::question(this, "Warning", "Are you want to save travel limit?",
+                                   QMessageBox::Yes|QMessageBox::No);
+     if (reply == QMessageBox::Yes) {
+         int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
+         int right_limit_value = ui->right_travel_limit_spinBox->value();
+         int left_limit_value = ui->left_travel_limit_spinBox->value();
+         WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().SET_POSITIVE_TRAVEL_LIMIT + QByteArray::number(right_limit_value));
+         WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().SET_NEGATIVE_TRAVEL_LIMIT + QByteArray::number(left_limit_value));
+     }
+}
+
+
+void MainWindow::on_restore_default_pushButton_clicked()
+{
+    QMessageBox::StandardButton reply;
+     reply = QMessageBox::question(this, "Warning", "The program will restart now, Reset controller to default ?",
+                                   QMessageBox::Yes|QMessageBox::No);
+     if (reply == QMessageBox::Yes) {
+         int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
+         WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().RESET_CONTORLLER);
+         qApp->exit();
+         QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
+     }
 
 }
 
