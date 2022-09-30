@@ -5,6 +5,7 @@
 #include <iostream>
 #include "wokerthead.h"
 
+
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
 QT_END_NAMESPACE
@@ -47,6 +48,9 @@ private slots:
     void on_set_zero_pushButton_clicked();
 
     void on_restore_default_pushButton_clicked();
+
+    void TestWriteData(QByteArray command);
+    void TastResponseData();
 
 private:
     Ui::MainWindow *ui;

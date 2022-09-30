@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>521</width>
-    <height>553</height>
+    <height>554</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -94,6 +94,9 @@
       </item>
       <item>
        <widget class="QGroupBox" name="contorl_groupBox">
+        <property name="enabled">
+         <bool>false</bool>
+        </property>
         <property name="title">
          <string>Actuators</string>
         </property>

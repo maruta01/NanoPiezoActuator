@@ -1,5 +1,6 @@
 #include "wokerthead.h"
 #include <QtCore>
+#include <QDebug>
 
 WorkerThread::WorkerThread(QObject *parent):
     QThread(parent)
@@ -9,14 +10,17 @@ WorkerThread::WorkerThread(QObject *parent):
 
 void WorkerThread::run()
 {
-    int value = value_current;
-    while(controller_id>=0){
-        if(stop) break;
-        value = GetCurrentPosition(controller_id);
-        emit NumberChanged(value);
-        this->msleep(500);
+      stop = false;
+      int new_value = 0;
+      int old_value = new_value;
+      while(true){
+        this->msleep(1000);
+        new_value = GetCurrentPosition(controller_id);
+        emit NumberChanged(QString::number(new_value));
+        if(stop || new_value == old_value) break;
+        old_value = new_value;
 
-    }
+      }
 }
 
 
@@ -24,10 +28,15 @@ QByteArray WorkerThread::WriteDataToSerialResponse(QByteArray command){
     serial->write(command+"\r");
     serial->flush();
     serial->waitForBytesWritten(300);
-    if(!serial->waitForReadyRead(300)){
-        return serial->readAll().replace(QByteArray("\n"), QByteArray("")).replace(QByteArray("\r"), QByteArray("")).replace(QByteArray(" "), QByteArray(""));
-    };
-    return "";
+    QByteArray res_data = "";
+
+    do{
+       serial->waitForReadyRead(300);
+       res_data = serial->readAll().replace(QByteArray("\n"), QByteArray("")).replace(QByteArray("\r"), QByteArray("")).replace(QByteArray(" "), QByteArray(""));
+    }
+    while(res_data == "");
+
+    return res_data;
 }
 
 int WorkerThread::GetCurrentPosition(int contoller_id){
@@ -36,7 +45,6 @@ int WorkerThread::GetCurrentPosition(int contoller_id){
     if(!res_data.isEmpty()){
         QList res_position = res_data.split('?');
         if(res_position.length()>1){
-            qDebug()<<"controller_position= "<<res_position[1];
             value = res_position[1].toInt();
         }
     }
