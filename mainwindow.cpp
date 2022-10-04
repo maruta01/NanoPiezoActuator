@@ -83,19 +83,26 @@ void MainWindow::on_ConnectPortButton_clicked()
     if(ui->ConnectPortButton->text()=="Connect"){
         QMessageBox msg;
         int cnt =1;
-        msg.setText(QString("Waiting....").arg(cnt));
+        msg.setWindowTitle("Connecting Actuator");
+        msg.setText(QString("waiting for %1 seconds").arg(cnt));
+        msg.setStandardButtons(QMessageBox::NoButton);
+        msg.setDefaultButton(QMessageBox::Ok);
+        msg.setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
         QTimer cntDown;
         QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown]()->void{
                              if(--cnt < 0){
                                  cntDown.stop();
-                                 msg.close();
+                                 msg.accept();
+                                 msg.show();
                              } else {
-                                 msg.setText(QString("Waiting....").arg(cnt));
+                                 msg.setText(QString("waiting for %1 seconds").arg(cnt));
                              }
                          });
+
+        const DialogSettingPort::Settings p = ui_settings->settings();
         cntDown.start(1000);
         msg.exec();
-        const DialogSettingPort::Settings p = ui_settings->settings();
+        sleep(1);
         if(p.settingStatus){
             serial->setPortName(p.name);
             serial->setBaudRate(p.baudRate);
@@ -117,12 +124,15 @@ void MainWindow::on_ConnectPortButton_clicked()
         else{
             serial_connect=false;
         }
+        msg.accept();
+
     }
     else{
         workerthread->stop = true;
         serial->close();
         ui->ConnectPortButton->setText("Connect");
     }
+
 }
 
 void MainWindow::InitContorllerConnection()
@@ -199,7 +209,7 @@ void MainWindow::GetControllerStatus(){
 void MainWindow::OnstartGetCurrentPosition(){
     workerthread->serial = serial;
     workerthread->controller_id = ui->contorller_id_comboBox->currentText().toInt();
-    workerthread->start();
+    UpdatePosition();
 }
 
 void MainWindow::ShowCurrentPosition(int value)
@@ -292,12 +302,16 @@ void MainWindow::on_motor_pushButton_pressed()
 {
     QMessageBox msg;
     int cnt =1;
-    msg.setText(QString("Waiting ...").arg(cnt));
+    msg.setWindowTitle("Sending Command");
+    msg.setText(QString("waiting for %1 seconds").arg(cnt));
+    msg.setStandardButtons(QMessageBox::NoButton);
+    msg.setDefaultButton(QMessageBox::Ok);
+    msg.setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
     QTimer cntDown;
     QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown]()->void{
                          if(--cnt < 0){
                              cntDown.stop();
-                             msg.close();
+                             msg.accept();
                          } else {
                              msg.setText(QString("Waiting ..."));
                          }
@@ -308,6 +322,8 @@ void MainWindow::on_motor_pushButton_pressed()
     string current_status = ui->motor_status_textBrowser->toPlainText().toStdString();
     string curent_button = ui->motor_pushButton->text().toStdString();
 
+    cntDown.start(1000);
+    msg.exec();
     if(current_status == "Motor ON" && curent_button == "Motor OFF"){
         WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().MOTOR_OFF);
     }
@@ -316,9 +332,6 @@ void MainWindow::on_motor_pushButton_pressed()
     }
     sleep(1);
     GetControllerStatus();
-
-    cntDown.start(1000);
-    msg.exec();
 }
 
 
@@ -331,22 +344,26 @@ void MainWindow::on_add_relative_pushButton_clicked()
     if(current_status == "Motor ON"){
         QMessageBox msg;
         int cnt =((int)(increase_value/20000)<2) ? 2: (int)(increase_value/20000);
+        msg.setWindowTitle("Sending Command");
         msg.setText(QString("waiting for %1 seconds").arg(cnt));
+        msg.setStandardButtons(QMessageBox::NoButton);
+        msg.setDefaultButton(QMessageBox::Ok);
+        msg.setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
 
         QTimer cntDown;
         QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown]()->void{
                              if(--cnt < 0){
                                  cntDown.stop();
-                                 msg.close();
+                                 msg.accept();
                              } else {
                                  msg.setText(QString("waiting for %1 seconds").arg(cnt));
                              }
                          });
-
         WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().POSITION_RELATIVE+QByteArray::number(increase_value));
         cntDown.start(1000);
-        workerthread->start();
         msg.exec();
+        UpdatePosition();
+
     }
 }
 
@@ -360,22 +377,26 @@ void MainWindow::on_del_relative_pushButton_clicked()
     if(current_status == "Motor ON"){
         QMessageBox msg;
         int cnt =((int)(decrease_value/20000)<2) ? 2: (int)(decrease_value/20000);
-        msg.informativeText();
+        msg.setWindowTitle("Sending Command");
         msg.setText(QString("waiting for %1 seconds").arg(cnt));
+        msg.setStandardButtons(QMessageBox::NoButton);
+        msg.setDefaultButton(QMessageBox::Ok);
+        msg.setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
 
         QTimer cntDown;
         QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown]()->void{
                              if(--cnt < 0){
                                  cntDown.stop();
-                                 msg.close();
+                                 msg.accept();
                              } else {
                                  msg.setText(QString("waiting for %1 seconds").arg(cnt));
                              }
                          });
         WriteDataToSerialResponse(QByteArray::number(contoller_id)+ascii_command_set().POSITION_RELATIVE+"-"+QByteArray::number(decrease_value));
         cntDown.start(1000);
-        workerthread->start();
         msg.exec();
+        UpdatePosition();
+
 
     }
 }
@@ -399,13 +420,17 @@ void MainWindow::on_set_zero_pushButton_clicked()
 
          int cnt =2;
          QMessageBox msg;
+         msg.setWindowTitle("Sending Command");
+         msg.setText(QString("waiting for %1 seconds").arg(cnt));
+         msg.setStandardButtons(QMessageBox::NoButton);
+         msg.setDefaultButton(QMessageBox::Ok);
+         msg.setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+
          QTimer cntDown;
-         msg.informativeText();
-         msg.setText(QString("Waiting...").arg(cnt));
          QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown]()->void{
                               if(--cnt < 0){
                                   cntDown.stop();
-                                  msg.close();
+                                  msg.accept();
                               } else {
                                   msg.setText(QString("waiting for %1 seconds").arg(cnt));
                               }
@@ -415,7 +440,7 @@ void MainWindow::on_set_zero_pushButton_clicked()
          WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().ZERO_POSITION);
 
          cntDown.start(1000);
-         workerthread->start();
+         UpdatePosition();
          msg.exec();
      }
 }
@@ -443,6 +468,7 @@ void MainWindow::on_save_limit_pushButton_clicked()
                           });
          //
          cntDown.start(1000);
+         msg.exec();
          int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
          int right_limit_value = ui->right_travel_limit_spinBox->value();
          int left_limit_value = ui->left_travel_limit_spinBox->value();
@@ -451,8 +477,8 @@ void MainWindow::on_save_limit_pushButton_clicked()
          WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().SET_NEGATIVE_TRAVEL_LIMIT + QByteArray::number(left_limit_value));
          sleep(1);
          GetTravelLimit();
-         workerthread->start();
-         msg.exec();
+         UpdatePosition();
+
      }
 }
 
@@ -470,3 +496,54 @@ void MainWindow::on_restore_default_pushButton_clicked()
      }
 
 }
+
+
+void MainWindow::UpdatePosition(){
+    int new_value = ui->current_position_textBrowser->toPlainText().toInt();
+    int old_value = new_value;
+    int controller_id = ui->contorller_id_comboBox->currentText().toInt();
+    while(true){
+      usleep(100);
+      new_value = GetCurrentPosition(controller_id);
+      if(new_value == old_value) break;
+      old_value = new_value;
+    }
+    ui->current_position_textBrowser->setText(QString::number(new_value));
+}
+
+
+int MainWindow::GetCurrentPosition(int contoller_id){
+    int value = -999999999;
+    QByteArray res_data = WriteDataToSerialResponse(QByteArray::number(contoller_id) + "TP", true);
+    if(!res_data.isEmpty()){
+        QList res_position = res_data.split('?');
+        if(res_position.length()>1){
+            value = res_position[1].toInt();
+        }
+    }
+    return value;
+}
+
+void MainWindow::on_pushButton_clicked()
+{
+    QMessageBox msg;
+    int cnt =1;
+    msg.setWindowTitle("Sending Command");
+    msg.setText(QString("waiting for %1 seconds").arg(cnt));
+    msg.setStandardButtons(QMessageBox::NoButton);
+    msg.setDefaultButton(QMessageBox::Ok);
+    msg.setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowTitleHint);
+
+    QTimer cntDown;
+    QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown]()->void{
+                         if(--cnt < 0){
+                             cntDown.stop();
+                             msg.accept();
+                         } else {
+                             msg.setText(QString("waiting for %1 seconds").arg(cnt));
+                         }
+                     });
+    cntDown.start(1000);
+    msg.exec();
+}
+

@@ -52,6 +52,11 @@ private slots:
     void TestWriteData(QByteArray command);
     void TastResponseData();
 
+    int GetCurrentPosition(int contoller_id);
+    void UpdatePosition();
+
+    void on_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     DialogSettingPort *ui_settings = nullptr;
