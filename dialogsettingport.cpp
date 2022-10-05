@@ -16,7 +16,13 @@ DialogSettingPort::DialogSettingPort(QWidget *parent) :
 
 DialogSettingPort::~DialogSettingPort()
 {
-    delete ui;
+    if (current_settings.settingStatus){
+        delete ui;
+    }
+    else{
+        show();
+    }
+
 }
 
 DialogSettingPort::Settings DialogSettingPort::settings() const
@@ -27,6 +33,7 @@ DialogSettingPort::Settings DialogSettingPort::settings() const
 void DialogSettingPort::on_buttonBox_accepted()
 {
     updateSettings();
+    emit SerialPortChanged(ui->com_comboBox->currentText());
     hide();
 }
 
@@ -39,5 +46,6 @@ void DialogSettingPort::updateSettings()
     current_settings.parity = QSerialPort::NoParity;
     current_settings.stopBits = QSerialPort::OneStop;
     current_settings.flowControl = QSerialPort::SoftwareControl;
+    current_settings.settingStatus = true;
 }
 

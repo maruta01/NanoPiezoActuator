@@ -25,6 +25,7 @@ public:
         QString stringStopBits;
         QSerialPort::FlowControl flowControl;
         QString stringFlowControl;
+        bool settingStatus=false;
     };
 
 
@@ -32,8 +33,12 @@ public:
     ~DialogSettingPort();
 
     Settings settings() const;
+    Ui::DialogSettingPort *ui;
 
-private slots:
+signals:
+    void SerialPortChanged(QString);
+
+public slots:
     void on_buttonBox_accepted();
 
 
@@ -41,7 +46,7 @@ private:
     void updateSettings();
 
 private:
-    Ui::DialogSettingPort *ui;
+
     Settings current_settings;
 };
 
