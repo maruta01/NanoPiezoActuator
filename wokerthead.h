@@ -4,6 +4,7 @@
 #include <QThread>
 #include <QtSerialPort/QSerialPort>
 
+
 class WorkerThread :public QThread
 {
     Q_OBJECT
@@ -17,9 +18,10 @@ public:
 
 
 signals:
-    void NumberChanged(int);
+    void NumberChanged(QString);
 
 private:
+    int value_current=0;
     int GetCurrentPosition(int);
     QByteArray WriteDataToSerialResponse(QByteArray);
 };
