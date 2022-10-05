@@ -241,7 +241,7 @@ void MainWindow::TestWriteData(QByteArray command){
     serial->flush();
 }
 
-void MainWindow::TastResponseData()
+void MainWindow::TestResponseData()
 {
 
 }

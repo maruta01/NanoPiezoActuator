@@ -29,15 +29,20 @@ public slots:
 
 private slots:
 
+    void ConnectSerialport();
     int GetContorllerId();
     void GetContorllerJog();
     void GetContorllerName();
+    int GetCurrentPosition(int contoller_id);
     void GetTravelLimit();
     void GetControllerStatus();
     void InitActionsConnections();
     void InitContorllerConnection();
     void OnstartGetCurrentPosition();
     void ShowWaringLabel(bool);
+    void UpdatePosition();
+    void TestResponseData();
+    void TestWriteData(QByteArray command);
     QByteArray WriteDataToSerialResponse(QByteArray command,bool query);
 
     void on_add_relative_pushButton_clicked();
@@ -47,15 +52,7 @@ private slots:
     void on_motor_pushButton_pressed();
     void on_save_limit_pushButton_clicked();
     void on_set_zero_pushButton_clicked();
-
     void on_restore_default_pushButton_clicked();
-
-    void TestWriteData(QByteArray command);
-    void TastResponseData();
-
-    int GetCurrentPosition(int contoller_id);
-    void UpdatePosition();
-    void ConnectSerialport();
 
 private:
     Ui::MainWindow *ui;
