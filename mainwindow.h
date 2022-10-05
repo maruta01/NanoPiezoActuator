@@ -21,6 +21,7 @@ public:
     ~MainWindow();
 
     WorkerThread *workerthread;
+    int divide_time_wait_actuator_step = 40000;
 
 public slots:
     void GetSerialNameChange(QString);
@@ -54,8 +55,7 @@ private slots:
 
     int GetCurrentPosition(int contoller_id);
     void UpdatePosition();
-
-    void on_pushButton_clicked();
+    void ConnectSerialport();
 
 private:
     Ui::MainWindow *ui;
