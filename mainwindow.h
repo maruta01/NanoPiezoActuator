@@ -54,6 +54,8 @@ private slots:
     void on_set_zero_pushButton_clicked();
     void on_restore_default_pushButton_clicked();
 
+    void on_save_setting_pushButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     DialogSettingPort *ui_settings = nullptr;

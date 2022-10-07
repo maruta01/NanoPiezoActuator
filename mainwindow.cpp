@@ -539,3 +539,38 @@ int MainWindow::GetCurrentPosition(int contoller_id){
     return value;
 }
 
+
+void MainWindow::on_save_setting_pushButton_clicked()
+{
+
+    qDebug()<<"save";
+
+
+    QMessageBox::StandardButton reply;
+     reply = QMessageBox::question(this, "Warning", "Are you want save setting to default ,that these are not lost when controller is powered off ?",
+                                   QMessageBox::Yes|QMessageBox::No);
+     if (reply == QMessageBox::Yes) {
+
+         int cnt =0;
+         QMessageBox msg;
+         QTimer cntDown;
+         msg.setText(QString("<p align='center'>waiting for save</p>").arg(cnt));
+         msg.setStandardButtons(QMessageBox::NoButton);
+         msg.setDefaultButton(QMessageBox::Ok);
+         msg.setWindowFlags(Qt::BypassWindowManagerHint);
+         msg.setStyleSheet("QLabel{min-width: 200px;}");
+
+         QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown, this]()->void{
+                              if(--cnt < 0){
+                                  cntDown.stop();
+                                  int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
+                                  WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().SAVE_SETTING);
+                                  msg.accept();
+                              }
+                          });
+         cntDown.start(1000);
+         msg.exec();
+     }
+
+}
+
