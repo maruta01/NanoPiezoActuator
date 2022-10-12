@@ -11,13 +11,11 @@ CONFIG += c++17
 SOURCES += \
     dialogsettingport.cpp \
     main.cpp \
-    mainwindow.cpp \
-    wokerthead.cpp
+    mainwindow.cpp
 
 HEADERS += \
     dialogsettingport.h \
-    mainwindow.h \
-    wokerthead.h
+    mainwindow.h
 
 FORMS += \
     dialogsettingport.ui \

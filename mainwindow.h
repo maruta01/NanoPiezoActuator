@@ -3,7 +3,6 @@
 
 #include <QMainWindow>
 #include <iostream>
-#include "wokerthead.h"
 
 
 QT_BEGIN_NAMESPACE
@@ -20,7 +19,6 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
-    WorkerThread *workerthread;
     int divide_time_wait_actuator_step = 40000;
 
 public slots:
@@ -38,11 +36,8 @@ private slots:
     void GetControllerStatus();
     void InitActionsConnections();
     void InitContorllerConnection();
-    void OnstartGetCurrentPosition();
     void ShowWaringLabel(bool);
     void UpdatePosition();
-    void TestResponseData();
-    void TestWriteData(QByteArray command);
     QByteArray WriteDataToSerialResponse(QByteArray command,bool query);
 
     void on_add_relative_pushButton_clicked();
@@ -55,8 +50,13 @@ private slots:
     void on_restore_default_pushButton_clicked();
 
     void on_save_setting_pushButton_clicked();
+    void writeSettings();
+    void readSettings();
+
+    void on_move_postition_pushButton_clicked();
 
 private:
+    int position_history = 0;
     Ui::MainWindow *ui;
     DialogSettingPort *ui_settings = nullptr;
 };
