@@ -12,8 +12,10 @@
 #include <unistd.h>
 #include <QProgressDialog>
 #include <QTimer>
-
 #include <QSettings>
+#include <QDir>
+
+
 
 
 using namespace std;
@@ -65,7 +67,9 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     serial->close();
-    writeSettings();
+    if(ui->ConnectPortButton->text() == "Connected"){
+        writeSettings();
+    }
     delete ui;
     delete ui_settings;
 }
@@ -75,7 +79,6 @@ void MainWindow::InitActionsConnections()
     connect(ui->actionExit, &QAction::triggered, this, &MainWindow::close);
     connect(ui->actionConfigure, &QAction::triggered, ui_settings, &DialogSettingPort::show);
 }
-
 
 
 void MainWindow::on_ConnectPortButton_clicked()
@@ -555,34 +558,35 @@ void MainWindow::writeSettings()
     int controller_id = ui->contorller_id_comboBox->currentText().toInt();
     int current_position = ui->current_position_textBrowser->toPlainText().toInt();
     QByteArray controller_name = ui->name_textBrowser->toPlainText().toUtf8();
+    int current_limit_right = ui->right_travel_limit_spinBox->value();
+    int current_limit_left = ui->left_travel_limit_spinBox->value();
 
 
-    QSettings settings("myprogram", "myapp");
-    settings.beginGroup("MainWindow");
 
-    //set setting data
-    settings.setValue(&"controller_id"[controller_id], controller_id);
-    settings.setValue(&"current_position"[controller_id], current_position);
-    settings.setValue(&"controller_name"[controller_id], controller_name);
-    settings.endGroup();
-    qDebug()<<"save";
+    QSettings* settings = new QSettings(QDir::currentPath() + "/actuator_config.ini", QSettings::IniFormat);
+    settings->setValue(&"controller_id"[controller_id], controller_id);
+    settings->setValue(&"current_position"[controller_id], current_position);
+    settings->setValue(&"controller_name"[controller_id], controller_name);
+    settings->setValue(&"current_limit_right"[controller_id], current_limit_right);
+    settings->setValue(&"current_limit_left"[controller_id], current_limit_left);
+    settings->sync();
 }
 
 void MainWindow::readSettings()
 {
     //Load
-    QSettings settings("myprogram", "myapp");
-    settings.beginGroup("MainWindow");
-
+    QSettings* settings = new QSettings(QDir::currentPath() + "/actuator_config.ini", QSettings::IniFormat);
     //get current data
     int controller_id = ui->contorller_id_comboBox->currentText().toInt();
     QByteArray controller_name = ui->name_textBrowser->toPlainText().toUtf8();
     QByteArray current_position = ui->current_position_textBrowser->toPlainText().toUtf8();
 
     //load setting data
-    QByteArray setting_controller_name = settings.value(&"controller_name"[controller_id]).toByteArray();
-    int setting_controller_id = settings.value(&"controller_id"[controller_id]).toInt();
-    QByteArray setting_position = settings.value(&"current_position"[controller_id]).toByteArray();
+    QByteArray setting_controller_name = settings->value(&"controller_name"[controller_id]).toByteArray();
+    int setting_controller_id = settings->value(&"controller_id"[controller_id]).toInt();
+    QByteArray setting_position = settings->value(&"current_position"[controller_id]).toByteArray();
+    int current_limit_right = settings->value(&"current_limit_right"[controller_id]).toInt();
+    int current_limit_left = settings->value(&"current_limit_left"[controller_id]).toInt();
 
     if(setting_controller_name==controller_name && setting_controller_id==controller_id && setting_position != current_position){
         QMessageBox::StandardButton reply;
@@ -590,11 +594,12 @@ void MainWindow::readSettings()
                                        QMessageBox::Yes|QMessageBox::No);
          if (reply == QMessageBox::Yes) {
                 ui->current_position_textBrowser->setText(setting_position);
+                ui->right_travel_limit_spinBox->setValue(current_limit_right);
+                ui->left_travel_limit_spinBox->setValue(current_limit_left);
+
                 position_history = setting_position.toInt();
             }
     }
-    settings.endGroup();
-    qDebug()<<"Load";
 }
 
 
