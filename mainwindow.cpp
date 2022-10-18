@@ -8,12 +8,13 @@
 #include <QProcess>
 #include <unistd.h>
 #include <QtCore/QCoreApplication>
-#include "wokerthead.h"
 #include <unistd.h>
 #include <QProgressDialog>
 #include <QTimer>
 #include <QSettings>
 #include <QDir>
+#include <QKeyEvent>
+#include <QShortcut>
 
 
 
@@ -68,7 +69,7 @@ MainWindow::~MainWindow()
 {
     serial->close();
     if(ui->ConnectPortButton->text() == "Connected"){
-        writeSettings();
+        WriteSettingsFile();
     }
     delete ui;
     delete ui_settings;
@@ -97,7 +98,8 @@ void MainWindow::on_ConnectPortButton_clicked()
                                  cntDown.stop();
                                  ConnectSerialport();
                                  msg.accept();
-                                 readSettings();
+                                 ui->default_in_contact_spinBox->setEnabled(true);
+                                 ui->default_out_contact_spinBox->setEnabled(true);
                              }
                          });
 
@@ -144,8 +146,14 @@ void MainWindow::InitContorllerConnection()
         GetTravelLimit();
         sleep(1);
         ui->contorl_groupBox->setEnabled(true);
+        ReadSettingsFile();
         sleep(1);
         UpdatePosition();
+        QShortcut *add_reletive_short_cut = new QShortcut(QKeySequence("Up"), ui->add_relative_pushButton);
+        QObject::connect(add_reletive_short_cut, SIGNAL(activated()), ui->add_relative_pushButton, SLOT(click()));
+
+        QShortcut *del_reletive_short_cut = new QShortcut(QKeySequence("Down"), ui->add_relative_pushButton);
+        QObject::connect(del_reletive_short_cut, SIGNAL(activated()), ui->del_relative_pushButton, SLOT(click()));
 
     }
     else{
@@ -319,86 +327,19 @@ void MainWindow::on_motor_pushButton_pressed()
 
 void MainWindow::on_add_relative_pushButton_clicked()
 {
-    int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
-    string current_status = ui->motor_status_textBrowser->toPlainText().toStdString();
     int increase_value = ui->increament_spinBox->value();
-
-    if(current_status == "Motor ON"){
-        if((ui->current_position_textBrowser->toPlainText().toInt() + increase_value) <= ui->right_travel_limit_spinBox->value())
-        {
-            QMessageBox msg;
-            int cnt =((int)(increase_value/divide_time_wait_actuator_step)<1) ? 1: (int)(increase_value/divide_time_wait_actuator_step);
-            msg.setText(QString("<p align='center'>waiting for %1 seconds</p>").arg(cnt));
-            msg.setStandardButtons(QMessageBox::NoButton);
-            msg.setDefaultButton(QMessageBox::Ok);
-            msg.setWindowFlags(Qt::BypassWindowManagerHint);
-            msg.setStyleSheet("QLabel{min-width: 150px;}");
-            QTimer cntDown;
-            QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown, this]()->void{
-                                 if(--cnt < 0){
-                                     cntDown.stop();
-                                     UpdatePosition();
-                                     msg.accept();
-                                 } else {
-                                     msg.setText(QString("<p align='center'>waiting for %1 seconds</p>").arg(cnt));
-                                 }
-                             });
-            WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().POSITION_RELATIVE+QByteArray::number(increase_value));
-            cntDown.start(1000);
-            msg.exec();
-        }
-        else{
-            QMessageBox msg;
-            msg.setWindowFlags(Qt::BypassWindowManagerHint);
-            msg.setStyleSheet("QLabel{min-width: 100px;}");
-            msg.setText(QString("<p align='center'>Over Travel Limit</p>"));
-
-            msg.exec();
-        }
-    }
+    int current_position = ui->current_position_textBrowser->toPlainText().toInt();
+    int position_value = current_position+increase_value;
+    MoveToPosition(position_value);
 }
 
 
 void MainWindow::on_del_relative_pushButton_clicked()
 {
-    int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
-    string current_status = ui->motor_status_textBrowser->toPlainText().toStdString();
-    int decrease_value = ui->increament_spinBox->value();
-
-    if(current_status == "Motor ON"){
-        if((ui->current_position_textBrowser->toPlainText().toInt() - decrease_value) >= ui->left_travel_limit_spinBox->value())
-        {
-            QMessageBox msg;
-            int cnt =((int)(decrease_value/divide_time_wait_actuator_step)<1) ? 1: (int)(decrease_value/divide_time_wait_actuator_step);
-            msg.setText(QString("<p align='center'>waiting for %1 seconds</p>").arg(cnt));
-            msg.setStandardButtons(QMessageBox::NoButton);
-            msg.setDefaultButton(QMessageBox::Ok);
-            msg.setWindowFlags(Qt::BypassWindowManagerHint);
-            msg.setStyleSheet("QLabel{min-width: 150px;}");
-
-            QTimer cntDown;
-            QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown, this]()->void{
-                                 if(--cnt < 0){
-                                     cntDown.stop();
-                                     UpdatePosition();
-                                     msg.accept();
-                                 } else {
-                                     msg.setText(QString("<p align='center'>waiting for %1 seconds</p>").arg(cnt));
-                                 }
-                             });
-            WriteDataToSerialResponse(QByteArray::number(contoller_id)+ascii_command_set().POSITION_RELATIVE+"-"+QByteArray::number(decrease_value));
-            cntDown.start(1000);
-            msg.exec();
-        }
-        else{
-            QMessageBox msg;
-            msg.setWindowFlags(Qt::BypassWindowManagerHint);
-            msg.setStyleSheet("QLabel{min-width: 100px;}");
-            msg.setText(QString("<p align='center'>Over Travel Limit</p>"));
-            msg.exec();
-        }
-
-    }
+    int increase_value = ui->increament_spinBox->value();
+    int current_position = ui->current_position_textBrowser->toPlainText().toInt();
+    int position_value = current_position-increase_value;
+    MoveToPosition(position_value);
 }
 
 
@@ -429,7 +370,9 @@ void MainWindow::on_set_zero_pushButton_clicked()
          QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown, this]()->void{
                               if(--cnt < 0){
                                   cntDown.stop();
+                                  sleep(1);
                                   UpdatePosition();
+                                  ui->current_position_textBrowser->setText("0");
                                   position_history = 0;
                                   msg.accept();
                               }
@@ -442,53 +385,44 @@ void MainWindow::on_set_zero_pushButton_clicked()
      }
 }
 
-
-void MainWindow::on_save_limit_pushButton_clicked()
-{
-    QMessageBox::StandardButton reply;
-     reply = QMessageBox::question(this, "Warning", "Are you want to save travel limit?",
-                                   QMessageBox::Yes|QMessageBox::No);
-     if (reply == QMessageBox::Yes) {
-         int cnt =0;
-         QMessageBox msg;
-         QTimer cntDown;
-         msg.setText(QString("<p align='center'>waiting for set</p>").arg(cnt));
-         msg.setStandardButtons(QMessageBox::NoButton);
-         msg.setDefaultButton(QMessageBox::Ok);
-         msg.setWindowFlags(Qt::BypassWindowManagerHint);
-         msg.setStyleSheet("QLabel{min-width: 200px;}");
-
-         QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown, this]()->void{
-                              if(--cnt < 0){
-                                  cntDown.stop();
-                                  int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
-                                  int right_limit_value = ui->right_travel_limit_spinBox->value();
-                                  int left_limit_value = ui->left_travel_limit_spinBox->value();
-                                  WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().SET_POSITIVE_TRAVEL_LIMIT + QByteArray::number(right_limit_value));
-                                  sleep(1);
-                                  WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().SET_NEGATIVE_TRAVEL_LIMIT + QByteArray::number(left_limit_value));
-                                  sleep(1);
-                                  GetTravelLimit();
-                                  msg.accept();
-                              }
-                          });
-         cntDown.start(1000);
-         msg.exec();
-     }
-}
-
-
 void MainWindow::on_restore_default_pushButton_clicked()
 {
-    QMessageBox::StandardButton reply;
-     reply = QMessageBox::question(this, "Warning", "The program will restart now, Reset controller setting to default ?",
-                                   QMessageBox::Yes|QMessageBox::No);
-     if (reply == QMessageBox::Yes) {
-         int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
-         WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().RESET_CONTORLLER);
-         qApp->exit();
-         QProcess::startDetached(qApp->arguments()[0], qApp->arguments());
-     }
+     QMessageBox::StandardButton reply;
+      reply = QMessageBox::question(this, "Warning", "Reset controller setting to default ?",
+                                    QMessageBox::Yes|QMessageBox::No);
+      if (reply == QMessageBox::Yes) {
+
+          int cnt =0;
+          QMessageBox msg;
+          QTimer cntDown;
+          msg.setText(QString("<p align='center'>waiting for Reset</p>").arg(cnt));
+          msg.setStandardButtons(QMessageBox::NoButton);
+          msg.setDefaultButton(QMessageBox::Ok);
+          msg.setWindowFlags(Qt::BypassWindowManagerHint);
+          msg.setStyleSheet("QLabel{min-width: 200px;}");
+
+          QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown, this]()->void{
+                               if(--cnt < 0){
+                                   cntDown.stop();
+                                   QSettings* settings = new QSettings(QDir::currentPath() + "/actuator_config.ini", QSettings::IniFormat);
+                                   int controller_id = ui->contorller_id_comboBox->currentText().toInt();
+                                   int current_limit_right = settings->value(&"default_setting_current_limit_right"[controller_id]).toInt();
+                                   int current_limit_left = settings->value(&"default_setting_current_limit_left"[controller_id]).toInt();
+                                   int default_out_contact = settings->value(&"default_setting_default_out_contact"[controller_id]).toInt();
+                                   int default_in_contact = settings->value(&"default_setting_default_in_contact"[controller_id]).toInt();
+
+                                   ui->right_travel_limit_spinBox->setValue(current_limit_right);
+                                   ui->left_travel_limit_spinBox->setValue(current_limit_left);
+                                   ui->default_out_contact_spinBox->setValue(default_out_contact);
+                                   ui->default_in_contact_spinBox->setValue(default_in_contact);
+
+                                   msg.accept();
+                               }
+                           });
+          cntDown.start(1000);
+          msg.exec();
+      }
+
 }
 
 
@@ -502,6 +436,9 @@ void MainWindow::UpdatePosition(){
       if(new_value == old_value) break;
       old_value = new_value;
     }
+    qDebug()<<"new_value="<<new_value;
+    qDebug()<<"position_history="<<position_history;
+
     new_value = new_value+position_history;
     ui->current_position_textBrowser->setText(QString::number(new_value));
 }
@@ -523,9 +460,8 @@ int MainWindow::GetCurrentPosition(int contoller_id){
 void MainWindow::on_save_setting_pushButton_clicked()
 {
 
-    qDebug()<<"save";
     QMessageBox::StandardButton reply;
-     reply = QMessageBox::question(this, "Warning", "Are you want save setting to default ,that these are not lost when controller is powered off ?",
+     reply = QMessageBox::question(this, "Warning", "Are you want save setting to default ?",
                                    QMessageBox::Yes|QMessageBox::No);
      if (reply == QMessageBox::Yes) {
 
@@ -541,8 +477,21 @@ void MainWindow::on_save_setting_pushButton_clicked()
          QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown, this]()->void{
                               if(--cnt < 0){
                                   cntDown.stop();
-                                  int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
-                                  WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().SAVE_SETTING);
+
+                                  int controller_id = ui->contorller_id_comboBox->currentText().toInt();
+                                  int default_out_contact = ui->default_out_contact_spinBox->value();
+                                  int default_in_contact = ui->default_in_contact_spinBox->value();
+                                  int current_limit_right = ui->right_travel_limit_spinBox->value();
+                                  int current_limit_left = ui->left_travel_limit_spinBox->value();
+
+                                  QSettings* settings = new QSettings(QDir::currentPath() + "/actuator_config.ini", QSettings::IniFormat);
+                                  settings->setValue(&"default_setting_default_in_contact"[controller_id], default_in_contact);
+                                  settings->setValue(&"default_setting_default_out_contact"[controller_id], default_out_contact);
+
+                                  settings->setValue(&"default_setting_current_limit_right"[controller_id], current_limit_right);
+                                  settings->setValue(&"default_setting_current_limit_left"[controller_id], current_limit_left);
+                                  settings->sync();
+
                                   msg.accept();
                               }
                           });
@@ -552,7 +501,7 @@ void MainWindow::on_save_setting_pushButton_clicked()
 
 }
 
-void MainWindow::writeSettings()
+void MainWindow::WriteSettingsFile()
 {
     //get current data
     int controller_id = ui->contorller_id_comboBox->currentText().toInt();
@@ -560,7 +509,8 @@ void MainWindow::writeSettings()
     QByteArray controller_name = ui->name_textBrowser->toPlainText().toUtf8();
     int current_limit_right = ui->right_travel_limit_spinBox->value();
     int current_limit_left = ui->left_travel_limit_spinBox->value();
-
+    int default_out_contact = ui->default_out_contact_spinBox->value();
+    int default_in_contact = ui->default_in_contact_spinBox->value();
 
 
     QSettings* settings = new QSettings(QDir::currentPath() + "/actuator_config.ini", QSettings::IniFormat);
@@ -569,10 +519,12 @@ void MainWindow::writeSettings()
     settings->setValue(&"controller_name"[controller_id], controller_name);
     settings->setValue(&"current_limit_right"[controller_id], current_limit_right);
     settings->setValue(&"current_limit_left"[controller_id], current_limit_left);
+    settings->setValue(&"default_out_contact"[controller_id], default_out_contact);
+    settings->setValue(&"default_in_contact"[controller_id], default_in_contact);
     settings->sync();
 }
 
-void MainWindow::readSettings()
+void MainWindow::ReadSettingsFile()
 {
     //Load
     QSettings* settings = new QSettings(QDir::currentPath() + "/actuator_config.ini", QSettings::IniFormat);
@@ -581,33 +533,38 @@ void MainWindow::readSettings()
     QByteArray controller_name = ui->name_textBrowser->toPlainText().toUtf8();
     QByteArray current_position = ui->current_position_textBrowser->toPlainText().toUtf8();
 
+
     //load setting data
     QByteArray setting_controller_name = settings->value(&"controller_name"[controller_id]).toByteArray();
     int setting_controller_id = settings->value(&"controller_id"[controller_id]).toInt();
     QByteArray setting_position = settings->value(&"current_position"[controller_id]).toByteArray();
     int current_limit_right = settings->value(&"current_limit_right"[controller_id]).toInt();
     int current_limit_left = settings->value(&"current_limit_left"[controller_id]).toInt();
+    int default_out_contact = settings->value(&"default_out_contact"[controller_id]).toInt();
+    int default_in_contact = settings->value(&"default_in_contact"[controller_id]).toInt();
 
-    if(setting_controller_name==controller_name && setting_controller_id==controller_id && setting_position != current_position){
-        QMessageBox::StandardButton reply;
-         reply = QMessageBox::question(this, "Warning", "found current position in history!\nAre you want to use current position from history ?",
-                                       QMessageBox::Yes|QMessageBox::No);
-         if (reply == QMessageBox::Yes) {
-                ui->current_position_textBrowser->setText(setting_position);
-                ui->right_travel_limit_spinBox->setValue(current_limit_right);
-                ui->left_travel_limit_spinBox->setValue(current_limit_left);
-
-                position_history = setting_position.toInt();
-            }
+    if (controller_name==setting_controller_name && controller_id == setting_controller_id){
+        ui->current_position_textBrowser->setText(setting_position);
+        ui->right_travel_limit_spinBox->setValue(current_limit_right);
+        ui->left_travel_limit_spinBox->setValue(current_limit_left);
+        ui->default_out_contact_spinBox->setValue(default_out_contact);
+        ui->default_in_contact_spinBox->setValue(default_in_contact);
+        position_history = setting_position.toInt();
     }
+
 }
 
 
 void MainWindow::on_move_postition_pushButton_clicked()
 {
+    int position_value = ui->position_spinBox->value();
+    MoveToPosition(position_value);
+}
+
+void MainWindow::MoveToPosition(int position_value)
+{
     int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
     string current_status = ui->motor_status_textBrowser->toPlainText().toStdString();
-    int position_value = ui->position_spinBox->value();
     int current_position = ui->current_position_textBrowser->toPlainText().toInt();
     int relative_value = position_value - (current_position);
 
@@ -680,6 +637,66 @@ void MainWindow::on_move_postition_pushButton_clicked()
             }
         }
 
+    }
+}
+
+
+void MainWindow::on_default_in_contact_pushButton_clicked()
+{
+    int position_value = ui->default_in_contact_spinBox->value();
+    MoveToPosition(position_value);
+}
+
+
+void MainWindow::on_default_out_contact_pushButton_clicked()
+{
+    int position_value = ui->default_out_contact_spinBox->value();
+    MoveToPosition(position_value);
+}
+
+
+void MainWindow::on_default_in_contact_checkBox_stateChanged(int arg1)
+{
+    if(!arg1){
+        ui->default_in_contact_spinBox->setReadOnly(false);
+    }
+    else{
+        ui->default_in_contact_spinBox->setReadOnly(true);
+    }
+
+}
+
+
+void MainWindow::on_default_out_contact_checkBox_stateChanged(int arg1)
+{
+    if(!arg1){
+        ui->default_out_contact_spinBox->setReadOnly(false);
+    }
+    else{
+        ui->default_out_contact_spinBox->setReadOnly(true);
+    }
+}
+
+
+
+void MainWindow::on_right_travel_limit_checkBox_stateChanged(int arg1)
+{
+    if(!arg1){
+        ui->right_travel_limit_spinBox->setReadOnly(false);
+    }
+    else{
+        ui->right_travel_limit_spinBox->setReadOnly(true);
+    }
+}
+
+
+void MainWindow::on_left_travel_limit_checkBox_stateChanged(int arg1)
+{
+    if(!arg1){
+        ui->left_travel_limit_spinBox->setReadOnly(false);
+    }
+    else{
+        ui->left_travel_limit_spinBox->setReadOnly(true);
     }
 }
 

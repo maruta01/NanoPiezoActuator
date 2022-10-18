@@ -6,15 +6,15 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>528</width>
-    <height>656</height>
+    <width>570</width>
+    <height>811</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>MainWindow</string>
   </property>
   <widget class="QWidget" name="centralwidget">
-   <layout class="QVBoxLayout" name="verticalLayout_6">
+   <layout class="QVBoxLayout" name="verticalLayout_8">
     <item>
      <layout class="QVBoxLayout" name="verticalLayout">
       <item>
@@ -97,6 +97,9 @@
         <property name="enabled">
          <bool>false</bool>
         </property>
+        <property name="tabletTracking">
+         <bool>false</bool>
+        </property>
         <property name="title">
          <string>Actuators</string>
         </property>
@@ -142,6 +145,47 @@
           </layout>
          </item>
          <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_6">
+           <item>
+            <widget class="QLabel" name="motor_status_label">
+             <property name="text">
+              <string>Motor status:</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QTextBrowser" name="motor_status_textBrowser">
+             <property name="maximumSize">
+              <size>
+               <width>16777215</width>
+               <height>30</height>
+              </size>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QPushButton" name="motor_pushButton">
+             <property name="text">
+              <string>Motor: NO</string>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+         <item>
+          <spacer name="verticalSpacer_2">
+           <property name="orientation">
+            <enum>Qt::Vertical</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>20</width>
+             <height>40</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+         <item>
           <layout class="QHBoxLayout" name="horizontalLayout_5">
            <item>
             <widget class="QLabel" name="current_position_label">
@@ -182,48 +226,83 @@
           </layout>
          </item>
          <item>
-          <spacer name="verticalSpacer_2">
-           <property name="orientation">
-            <enum>Qt::Vertical</enum>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string>__________________________________________________________________________________</string>
            </property>
-           <property name="sizeType">
-            <enum>QSizePolicy::Preferred</enum>
-           </property>
-           <property name="sizeHint" stdset="0">
-            <size>
-             <width>20</width>
-             <height>24</height>
-            </size>
-           </property>
-          </spacer>
+          </widget>
          </item>
          <item>
-          <layout class="QHBoxLayout" name="horizontalLayout_6">
-           <item>
-            <widget class="QLabel" name="motor_status_label">
-             <property name="text">
-              <string>Motor status:</string>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QTextBrowser" name="motor_status_textBrowser">
-             <property name="maximumSize">
-              <size>
-               <width>16777215</width>
-               <height>30</height>
-              </size>
-             </property>
-            </widget>
-           </item>
-           <item>
-            <widget class="QPushButton" name="motor_pushButton">
-             <property name="text">
-              <string>Motor: NO</string>
-             </property>
-            </widget>
-           </item>
-          </layout>
+          <widget class="QGroupBox" name="groupBox_3">
+           <property name="font">
+            <font>
+             <family>Ubuntu</family>
+             <bold>false</bold>
+             <stylestrategy>PreferDefault</stylestrategy>
+            </font>
+           </property>
+           <property name="layoutDirection">
+            <enum>Qt::LeftToRight</enum>
+           </property>
+           <property name="autoFillBackground">
+            <bool>false</bool>
+           </property>
+           <property name="title">
+            <string>Position move</string>
+           </property>
+           <property name="flat">
+            <bool>false</bool>
+           </property>
+           <layout class="QVBoxLayout" name="verticalLayout_4">
+            <item>
+             <layout class="QHBoxLayout" name="horizontalLayout_10">
+              <item>
+               <widget class="QLabel" name="move_to_position_label">
+                <property name="text">
+                 <string>move to position</string>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <spacer name="horizontalSpacer_6">
+                <property name="orientation">
+                 <enum>Qt::Horizontal</enum>
+                </property>
+                <property name="sizeHint" stdset="0">
+                 <size>
+                  <width>40</width>
+                  <height>20</height>
+                 </size>
+                </property>
+               </spacer>
+              </item>
+              <item>
+               <widget class="QSpinBox" name="position_spinBox">
+                <property name="minimumSize">
+                 <size>
+                  <width>156</width>
+                  <height>0</height>
+                 </size>
+                </property>
+                <property name="minimum">
+                 <number>-1000000</number>
+                </property>
+                <property name="maximum">
+                 <number>1000000</number>
+                </property>
+               </widget>
+              </item>
+              <item>
+               <widget class="QPushButton" name="move_postition_pushButton">
+                <property name="text">
+                 <string>move</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </item>
+           </layout>
+          </widget>
          </item>
          <item>
           <widget class="QGroupBox" name="groupBox_2">
@@ -311,210 +390,299 @@
           </widget>
          </item>
          <item>
-          <widget class="QGroupBox" name="groupBox_3">
-           <property name="font">
-            <font>
-             <family>Ubuntu</family>
-             <bold>false</bold>
-             <stylestrategy>PreferDefault</stylestrategy>
-            </font>
+          <widget class="QLabel" name="Line_label">
+           <property name="text">
+            <string>__________________________________________________________________________________</string>
            </property>
-           <property name="layoutDirection">
-            <enum>Qt::LeftToRight</enum>
-           </property>
-           <property name="autoFillBackground">
-            <bool>false</bool>
-           </property>
-           <property name="title">
-            <string>Position move</string>
-           </property>
-           <property name="flat">
-            <bool>false</bool>
-           </property>
-           <layout class="QVBoxLayout" name="verticalLayout_4">
-            <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_10">
-              <item>
-               <widget class="QLabel" name="move_to_position_label">
-                <property name="text">
-                 <string>move to position</string>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <spacer name="horizontalSpacer_6">
-                <property name="orientation">
-                 <enum>Qt::Horizontal</enum>
-                </property>
-                <property name="sizeHint" stdset="0">
-                 <size>
-                  <width>40</width>
-                  <height>20</height>
-                 </size>
-                </property>
-               </spacer>
-              </item>
-              <item>
-               <widget class="QSpinBox" name="position_spinBox">
-                <property name="minimumSize">
-                 <size>
-                  <width>156</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="minimum">
-                 <number>-1000000</number>
-                </property>
-                <property name="maximum">
-                 <number>1000000</number>
-                </property>
-               </widget>
-              </item>
-              <item>
-               <widget class="QPushButton" name="move_postition_pushButton">
-                <property name="text">
-                 <string>move</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
-            </item>
-           </layout>
           </widget>
          </item>
          <item>
-          <widget class="QGroupBox" name="limit_groupBox">
+          <widget class="QGroupBox" name="groupBox_5">
            <property name="title">
-            <string>travel limit</string>
+            <string>Configuration Settings</string>
            </property>
-           <layout class="QVBoxLayout" name="verticalLayout_5">
+           <layout class="QVBoxLayout" name="verticalLayout_7">
             <item>
-             <layout class="QGridLayout" name="gridLayout">
-              <item row="1" column="0">
-               <layout class="QHBoxLayout" name="horizontalLayout_8">
-                <item>
-                 <widget class="QLabel" name="left_travel_limit_label">
-                  <property name="text">
-                   <string>Left travel Limit (-)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_3">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QSpinBox" name="left_travel_limit_spinBox">
-                  <property name="minimumSize">
-                   <size>
-                    <width>156</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="minimum">
-                   <number>-10000000</number>
-                  </property>
-                  <property name="maximum">
-                   <number>0</number>
-                  </property>
-                  <property name="value">
-                   <number>0</number>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="usteps_label_2">
-                  <property name="text">
-                   <string>μsteps</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-              <item row="0" column="0">
-               <layout class="QHBoxLayout" name="horizontalLayout_7">
-                <item>
-                 <widget class="QLabel" name="right_travel_limit_label">
-                  <property name="text">
-                   <string>Right travel Limit (+)</string>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <spacer name="horizontalSpacer_2">
-                  <property name="orientation">
-                   <enum>Qt::Horizontal</enum>
-                  </property>
-                  <property name="sizeHint" stdset="0">
-                   <size>
-                    <width>40</width>
-                    <height>20</height>
-                   </size>
-                  </property>
-                 </spacer>
-                </item>
-                <item>
-                 <widget class="QSpinBox" name="right_travel_limit_spinBox">
-                  <property name="minimumSize">
-                   <size>
-                    <width>156</width>
-                    <height>0</height>
-                   </size>
-                  </property>
-                  <property name="minimum">
-                   <number>0</number>
-                  </property>
-                  <property name="maximum">
-                   <number>10000000</number>
-                  </property>
-                 </widget>
-                </item>
-                <item>
-                 <widget class="QLabel" name="usteps_label_3">
-                  <property name="text">
-                   <string>μsteps</string>
-                  </property>
-                 </widget>
-                </item>
-               </layout>
-              </item>
-              <item row="2" column="0">
-               <widget class="QPushButton" name="save_limit_pushButton">
-                <property name="minimumSize">
-                 <size>
-                  <width>0</width>
-                  <height>0</height>
-                 </size>
-                </property>
-                <property name="text">
-                 <string>Set Travel Limit</string>
-                </property>
-               </widget>
-              </item>
-             </layout>
+             <widget class="QGroupBox" name="groupBox_4">
+              <property name="font">
+               <font>
+                <family>Ubuntu</family>
+                <bold>false</bold>
+                <stylestrategy>PreferDefault</stylestrategy>
+               </font>
+              </property>
+              <property name="layoutDirection">
+               <enum>Qt::LeftToRight</enum>
+              </property>
+              <property name="autoFillBackground">
+               <bool>false</bool>
+              </property>
+              <property name="title">
+               <string>Default position</string>
+              </property>
+              <property name="flat">
+               <bool>false</bool>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_6">
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_12">
+                 <item>
+                  <widget class="QLabel" name="default_in_contact_label">
+                   <property name="text">
+                    <string>default in contact</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="default_in_contact_spinBox">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                   <property name="minimum">
+                    <number>-1000000</number>
+                   </property>
+                   <property name="maximum">
+                    <number>1000000</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="default_in_contact_pushButton">
+                   <property name="text">
+                    <string>move</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="default_in_contact_checkBox">
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Lock</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_11">
+                 <item>
+                  <widget class="QLabel" name="default_out_contact_label">
+                   <property name="text">
+                    <string>default out contact</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QSpinBox" name="default_out_contact_spinBox">
+                   <property name="enabled">
+                    <bool>false</bool>
+                   </property>
+                   <property name="readOnly">
+                    <bool>true</bool>
+                   </property>
+                   <property name="minimum">
+                    <number>-1000000</number>
+                   </property>
+                   <property name="maximum">
+                    <number>1000000</number>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QPushButton" name="default_out_contact_pushButton">
+                   <property name="text">
+                    <string>move</string>
+                   </property>
+                  </widget>
+                 </item>
+                 <item>
+                  <widget class="QCheckBox" name="default_out_contact_checkBox">
+                   <property name="minimumSize">
+                    <size>
+                     <width>0</width>
+                     <height>0</height>
+                    </size>
+                   </property>
+                   <property name="maximumSize">
+                    <size>
+                     <width>60</width>
+                     <height>16777215</height>
+                    </size>
+                   </property>
+                   <property name="text">
+                    <string>Lock</string>
+                   </property>
+                   <property name="checked">
+                    <bool>true</bool>
+                   </property>
+                  </widget>
+                 </item>
+                </layout>
+               </item>
+              </layout>
+             </widget>
+            </item>
+            <item>
+             <widget class="QGroupBox" name="limit_groupBox">
+              <property name="title">
+               <string>travel limit</string>
+              </property>
+              <layout class="QVBoxLayout" name="verticalLayout_5">
+               <item>
+                <layout class="QGridLayout" name="gridLayout">
+                 <item row="0" column="0">
+                  <layout class="QHBoxLayout" name="horizontalLayout_7">
+                   <item>
+                    <widget class="QLabel" name="right_travel_limit_label">
+                     <property name="text">
+                      <string>Right travel Limit (+)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QSpinBox" name="right_travel_limit_spinBox">
+                     <property name="minimumSize">
+                      <size>
+                       <width>156</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="readOnly">
+                      <bool>true</bool>
+                     </property>
+                     <property name="minimum">
+                      <number>0</number>
+                     </property>
+                     <property name="maximum">
+                      <number>10000000</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="usteps_label_3">
+                     <property name="maximumSize">
+                      <size>
+                       <width>60</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>μsteps</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="right_travel_limit_checkBox">
+                     <property name="maximumSize">
+                      <size>
+                       <width>60</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Lock</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                 <item row="1" column="0">
+                  <layout class="QHBoxLayout" name="horizontalLayout_8">
+                   <item>
+                    <widget class="QLabel" name="left_travel_limit_label">
+                     <property name="text">
+                      <string>Left travel Limit (-)</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QSpinBox" name="left_travel_limit_spinBox">
+                     <property name="minimumSize">
+                      <size>
+                       <width>156</width>
+                       <height>0</height>
+                      </size>
+                     </property>
+                     <property name="readOnly">
+                      <bool>true</bool>
+                     </property>
+                     <property name="minimum">
+                      <number>-10000000</number>
+                     </property>
+                     <property name="maximum">
+                      <number>0</number>
+                     </property>
+                     <property name="value">
+                      <number>0</number>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QLabel" name="usteps_label_2">
+                     <property name="maximumSize">
+                      <size>
+                       <width>60</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>μsteps</string>
+                     </property>
+                    </widget>
+                   </item>
+                   <item>
+                    <widget class="QCheckBox" name="left_travel_limit_checkBox">
+                     <property name="maximumSize">
+                      <size>
+                       <width>60</width>
+                       <height>16777215</height>
+                      </size>
+                     </property>
+                     <property name="text">
+                      <string>Lock</string>
+                     </property>
+                     <property name="checked">
+                      <bool>true</bool>
+                     </property>
+                    </widget>
+                   </item>
+                  </layout>
+                 </item>
+                </layout>
+               </item>
+               <item>
+                <layout class="QHBoxLayout" name="horizontalLayout_9"/>
+               </item>
+              </layout>
+             </widget>
             </item>
             <item>
              <widget class="QLabel" name="setting_travel_limit_label">
               <property name="text">
-               <string>Save controller travel limit setting </string>
+               <string>Set controller travel limit and default contact :</string>
               </property>
              </widget>
             </item>
             <item>
-             <layout class="QHBoxLayout" name="horizontalLayout_9">
+             <layout class="QHBoxLayout" name="horizontalLayout_13">
               <item>
                <widget class="QPushButton" name="save_setting_pushButton">
                 <property name="text">
-                 <string>Save Setting</string>
+                 <string>Save Setting to default</string>
                 </property>
                </widget>
               </item>
@@ -561,7 +729,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>528</width>
+     <width>570</width>
      <height>20</height>
     </rect>
    </property>
