@@ -97,6 +97,7 @@ void MainWindow::on_ConnectPortButton_clicked()
                              if(--cnt < 0){
                                  cntDown.stop();
                                  ConnectSerialport();
+                                 ReadSettingsFile();
                                  msg.accept();
                                  ui->default_in_contact_spinBox->setEnabled(true);
                                  ui->default_out_contact_spinBox->setEnabled(true);
@@ -146,7 +147,6 @@ void MainWindow::InitContorllerConnection()
         GetTravelLimit();
         sleep(1);
         ui->contorl_groupBox->setEnabled(true);
-        ReadSettingsFile();
         sleep(1);
         UpdatePosition();
         QShortcut *add_reletive_short_cut = new QShortcut(QKeySequence("Up"), ui->add_relative_pushButton);
@@ -406,10 +406,10 @@ void MainWindow::on_restore_default_pushButton_clicked()
                                    cntDown.stop();
                                    QSettings* settings = new QSettings(QDir::currentPath() + "/actuator_config.ini", QSettings::IniFormat);
                                    int controller_id = ui->contorller_id_comboBox->currentText().toInt();
-                                   int current_limit_right = settings->value(&"default_setting_current_limit_right"[controller_id]).toInt();
-                                   int current_limit_left = settings->value(&"default_setting_current_limit_left"[controller_id]).toInt();
-                                   int default_out_contact = settings->value(&"default_setting_default_out_contact"[controller_id]).toInt();
-                                   int default_in_contact = settings->value(&"default_setting_default_in_contact"[controller_id]).toInt();
+                                   int current_limit_right = settings->value("default_setting_current_limit_right"+QString::number(controller_id).toUtf8()).toInt();
+                                   int current_limit_left = settings->value("default_setting_current_limit_left"+QString::number(controller_id).toUtf8()).toInt();
+                                   int default_out_contact = settings->value("default_setting_default_out_contact"+QString::number(controller_id).toUtf8()).toInt();
+                                   int default_in_contact = settings->value("default_setting_default_in_contact"+QString::number(controller_id).toUtf8()).toInt();
 
                                    ui->right_travel_limit_spinBox->setValue(current_limit_right);
                                    ui->left_travel_limit_spinBox->setValue(current_limit_left);
@@ -436,16 +436,13 @@ void MainWindow::UpdatePosition(){
       if(new_value == old_value) break;
       old_value = new_value;
     }
-    qDebug()<<"new_value="<<new_value;
-    qDebug()<<"position_history="<<position_history;
-
     new_value = new_value+position_history;
     ui->current_position_textBrowser->setText(QString::number(new_value));
 }
 
 
 int MainWindow::GetCurrentPosition(int contoller_id){
-    int value = -999999999;
+    int value = position_history;
     QByteArray res_data = WriteDataToSerialResponse(QByteArray::number(contoller_id) + "TP", true);
     if(!res_data.isEmpty()){
         QList res_position = res_data.split('?');
@@ -459,7 +456,6 @@ int MainWindow::GetCurrentPosition(int contoller_id){
 
 void MainWindow::on_save_setting_pushButton_clicked()
 {
-
     QMessageBox::StandardButton reply;
      reply = QMessageBox::question(this, "Warning", "Are you want save setting to default ?",
                                    QMessageBox::Yes|QMessageBox::No);
@@ -485,11 +481,11 @@ void MainWindow::on_save_setting_pushButton_clicked()
                                   int current_limit_left = ui->left_travel_limit_spinBox->value();
 
                                   QSettings* settings = new QSettings(QDir::currentPath() + "/actuator_config.ini", QSettings::IniFormat);
-                                  settings->setValue(&"default_setting_default_in_contact"[controller_id], default_in_contact);
-                                  settings->setValue(&"default_setting_default_out_contact"[controller_id], default_out_contact);
+                                  settings->setValue("default_setting_default_in_contact"+QString::number(controller_id).toUtf8(), default_in_contact);
+                                  settings->setValue("default_setting_default_out_contact"+QString::number(controller_id).toUtf8(), default_out_contact);
 
-                                  settings->setValue(&"default_setting_current_limit_right"[controller_id], current_limit_right);
-                                  settings->setValue(&"default_setting_current_limit_left"[controller_id], current_limit_left);
+                                  settings->setValue("default_setting_current_limit_right"+QString::number(controller_id).toUtf8(), current_limit_right);
+                                  settings->setValue("default_setting_current_limit_left"+QString::number(controller_id).toUtf8(), current_limit_left);
                                   settings->sync();
 
                                   msg.accept();
@@ -511,21 +507,24 @@ void MainWindow::WriteSettingsFile()
     int current_limit_left = ui->left_travel_limit_spinBox->value();
     int default_out_contact = ui->default_out_contact_spinBox->value();
     int default_in_contact = ui->default_in_contact_spinBox->value();
-
+    qDebug()<<"id="<<controller_id;
+    qDebug()<<"id="<< "controller_id"+QString::number(controller_id).toUtf8() ;
 
     QSettings* settings = new QSettings(QDir::currentPath() + "/actuator_config.ini", QSettings::IniFormat);
-    settings->setValue(&"controller_id"[controller_id], controller_id);
-    settings->setValue(&"current_position"[controller_id], current_position);
-    settings->setValue(&"controller_name"[controller_id], controller_name);
-    settings->setValue(&"current_limit_right"[controller_id], current_limit_right);
-    settings->setValue(&"current_limit_left"[controller_id], current_limit_left);
-    settings->setValue(&"default_out_contact"[controller_id], default_out_contact);
-    settings->setValue(&"default_in_contact"[controller_id], default_in_contact);
+    settings->setValue("controller_id"+QString::number(controller_id).toUtf8(), controller_id);
+    settings->setValue("current_position"+QString::number(controller_id).toUtf8(), current_position);
+    settings->setValue("controller_name"+QString::number(controller_id).toUtf8(), controller_name);
+    settings->setValue("current_limit_right"+QString::number(controller_id).toUtf8(), current_limit_right);
+    settings->setValue("current_limit_left"+QString::number(controller_id).toUtf8(), current_limit_left);
+    settings->setValue("default_out_contact"+QString::number(controller_id).toUtf8(), default_out_contact);
+    settings->setValue("default_in_contact"+QString::number(controller_id).toUtf8(), default_in_contact);
     settings->sync();
 }
 
 void MainWindow::ReadSettingsFile()
 {
+    if(!(QFile::exists(QDir::currentPath() + "/actuator_config.ini"))) return;
+
     //Load
     QSettings* settings = new QSettings(QDir::currentPath() + "/actuator_config.ini", QSettings::IniFormat);
     //get current data
@@ -535,22 +534,24 @@ void MainWindow::ReadSettingsFile()
 
 
     //load setting data
-    QByteArray setting_controller_name = settings->value(&"controller_name"[controller_id]).toByteArray();
-    int setting_controller_id = settings->value(&"controller_id"[controller_id]).toInt();
-    QByteArray setting_position = settings->value(&"current_position"[controller_id]).toByteArray();
-    int current_limit_right = settings->value(&"current_limit_right"[controller_id]).toInt();
-    int current_limit_left = settings->value(&"current_limit_left"[controller_id]).toInt();
-    int default_out_contact = settings->value(&"default_out_contact"[controller_id]).toInt();
-    int default_in_contact = settings->value(&"default_in_contact"[controller_id]).toInt();
+    QByteArray setting_controller_name = settings->value("controller_name"+QString::number(controller_id).toUtf8()).toByteArray();
+    int setting_controller_id = settings->value("controller_id"+QString::number(controller_id).toUtf8()).toInt();
+    QByteArray setting_position = settings->value("current_position"+QString::number(controller_id).toUtf8()).toByteArray();
+    int current_limit_right = settings->value("current_limit_right"+QString::number(controller_id).toUtf8()).toInt();
+    int current_limit_left = settings->value("current_limit_left"+QString::number(controller_id).toUtf8()).toInt();
+    int default_out_contact = settings->value("default_out_contact"+QString::number(controller_id).toUtf8()).toInt();
+    int default_in_contact = settings->value("default_in_contact"+QString::number(controller_id).toUtf8()).toInt();
 
-    if (controller_name==setting_controller_name && controller_id == setting_controller_id){
+    if (controller_name==setting_controller_name && controller_id == setting_controller_id && current_position != setting_position){
         ui->current_position_textBrowser->setText(setting_position);
-        ui->right_travel_limit_spinBox->setValue(current_limit_right);
-        ui->left_travel_limit_spinBox->setValue(current_limit_left);
-        ui->default_out_contact_spinBox->setValue(default_out_contact);
-        ui->default_in_contact_spinBox->setValue(default_in_contact);
         position_history = setting_position.toInt();
     }
+    else{
+    }
+    ui->right_travel_limit_spinBox->setValue(current_limit_right);
+    ui->left_travel_limit_spinBox->setValue(current_limit_left);
+    ui->default_out_contact_spinBox->setValue(default_out_contact);
+    ui->default_in_contact_spinBox->setValue(default_in_contact);
 
 }
 
@@ -574,19 +575,21 @@ void MainWindow::MoveToPosition(int position_value)
             {
                 QMessageBox msg;
                 int cnt =((int)(relative_value/divide_time_wait_actuator_step)<1) ? 1: (int)(relative_value/divide_time_wait_actuator_step);
-                msg.setText(QString("<p align='center'>waiting for %1 seconds</p>").arg(cnt));
+                msg.setText(QString("<p align='center'>waiting move...</p>"));
                 msg.setStandardButtons(QMessageBox::NoButton);
                 msg.setDefaultButton(QMessageBox::Ok);
                 msg.setWindowFlags(Qt::BypassWindowManagerHint);
                 msg.setStyleSheet("QLabel{min-width: 150px;}");
                 QTimer cntDown;
-                QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown, this]()->void{
+                QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown, position_value,this]()->void{
                                      if(--cnt < 0){
                                          cntDown.stop();
                                          UpdatePosition();
+                                         while(1){
+                                             if(ui->current_position_textBrowser->toPlainText().toInt()==position_value) break;
+                                             MoveToPosition(position_value);
+                                         }
                                          msg.accept();
-                                     } else {
-                                         msg.setText(QString("<p align='center'>waiting for %1 seconds</p>").arg(cnt));
                                      }
                                  });
                 WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().POSITION_RELATIVE+QByteArray::number(relative_value));
@@ -608,20 +611,24 @@ void MainWindow::MoveToPosition(int position_value)
                 relative_value = relative_value*(-1);
                 QMessageBox msg;
                 int cnt =((int)(relative_value/divide_time_wait_actuator_step)<1) ? 1: (int)(relative_value/divide_time_wait_actuator_step);
-                msg.setText(QString("<p align='center'>waiting for %1 seconds</p>").arg(cnt));
+                msg.setText(QString("<p align='center'>waiting move...</p>"));
                 msg.setStandardButtons(QMessageBox::NoButton);
                 msg.setDefaultButton(QMessageBox::Ok);
                 msg.setWindowFlags(Qt::BypassWindowManagerHint);
                 msg.setStyleSheet("QLabel{min-width: 150px;}");
 
                 QTimer cntDown;
-                QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown, this]()->void{
+                QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown,position_value, this]()->void{
                                      if(--cnt < 0){
                                          cntDown.stop();
                                          UpdatePosition();
+                                         while(1){
+                                             if(ui->current_position_textBrowser->toPlainText().toInt()==position_value){
+                                                 break;
+                                             }
+                                             MoveToPosition(position_value);
+                                         }
                                          msg.accept();
-                                     } else {
-                                         msg.setText(QString("<p align='center'>waiting for %1 seconds</p>").arg(cnt));
                                      }
                                  });
                 WriteDataToSerialResponse(QByteArray::number(contoller_id)+ascii_command_set().POSITION_RELATIVE+"-"+QByteArray::number(relative_value));
