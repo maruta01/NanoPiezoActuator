@@ -3,6 +3,7 @@
 
 #include <QMainWindow>
 #include <iostream>
+#include <QSoundEffect>
 
 
 QT_BEGIN_NAMESPACE
@@ -69,5 +70,7 @@ private:
     int position_history = 0;
     Ui::MainWindow *ui;
     DialogSettingPort *ui_settings = nullptr;
+    QSoundEffect * sound_finish = new QSoundEffect();
+
 };
 #endif // MAINWINDOW_H

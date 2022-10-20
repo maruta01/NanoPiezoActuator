@@ -17,8 +17,6 @@
 #include <QShortcut>
 
 
-
-
 using namespace std;
 
 QSerialPort* serial;
@@ -56,6 +54,9 @@ MainWindow::MainWindow(QWidget *parent)
     ui(new Ui::MainWindow),
     ui_settings(new DialogSettingPort)
 {
+    //Sound
+    sound_finish->setSource(QUrl("qrc:/sounds/connected.wav"));
+
     ui_settings->show();
     ui->setupUi(this);
     this->setWindowTitle("NanoPZ (Optics)");
@@ -98,9 +99,10 @@ void MainWindow::on_ConnectPortButton_clicked()
                                  cntDown.stop();
                                  ConnectSerialport();
                                  ReadSettingsFile();
-                                 msg.accept();
                                  ui->default_in_contact_spinBox->setEnabled(true);
                                  ui->default_out_contact_spinBox->setEnabled(true);
+                                 sound_finish->play();
+                                 msg.accept();
                              }
                          });
 
@@ -129,6 +131,7 @@ void MainWindow::ConnectSerialport(){
             InitContorllerConnection();
             ui->ConnectPortButton->setText("Connected");
             ui->ConnectPortButton->setEnabled(false);
+            sound_finish->play();
 
         } else {
             QMessageBox::critical(this, QString("Error"), serial->errorString());
@@ -313,7 +316,8 @@ void MainWindow::on_motor_pushButton_pressed()
                              }
                              sleep(1);
                              GetControllerStatus();
-                             msg.accept();
+                             sound_finish->play();
+                             msg.accept();  
                          } else {
                              msg.setText(QString("Waiting ..."));
                          }
@@ -327,18 +331,22 @@ void MainWindow::on_motor_pushButton_pressed()
 
 void MainWindow::on_add_relative_pushButton_clicked()
 {
-    int increase_value = ui->increament_spinBox->value();
+    int relative_value = ui->increament_spinBox->value();
+    if(!relative_value) return;
+
     int current_position = ui->current_position_textBrowser->toPlainText().toInt();
-    int position_value = current_position+increase_value;
+    int position_value = current_position+relative_value;
     MoveToPosition(position_value);
 }
 
 
 void MainWindow::on_del_relative_pushButton_clicked()
 {
-    int increase_value = ui->increament_spinBox->value();
+    int relative_value = ui->increament_spinBox->value();
+    if(!relative_value) return;
+
     int current_position = ui->current_position_textBrowser->toPlainText().toInt();
-    int position_value = current_position-increase_value;
+    int position_value = current_position-relative_value;
     MoveToPosition(position_value);
 }
 
@@ -374,6 +382,7 @@ void MainWindow::on_set_zero_pushButton_clicked()
                                   UpdatePosition();
                                   ui->current_position_textBrowser->setText("0");
                                   position_history = 0;
+                                  sound_finish->play();
                                   msg.accept();
                               }
                           });
@@ -415,7 +424,7 @@ void MainWindow::on_restore_default_pushButton_clicked()
                                    ui->left_travel_limit_spinBox->setValue(current_limit_left);
                                    ui->default_out_contact_spinBox->setValue(default_out_contact);
                                    ui->default_in_contact_spinBox->setValue(default_in_contact);
-
+                                   sound_finish->play();
                                    msg.accept();
                                }
                            });
@@ -487,7 +496,7 @@ void MainWindow::on_save_setting_pushButton_clicked()
                                   settings->setValue("default_setting_current_limit_right"+QString::number(controller_id).toUtf8(), current_limit_right);
                                   settings->setValue("default_setting_current_limit_left"+QString::number(controller_id).toUtf8(), current_limit_left);
                                   settings->sync();
-
+                                  sound_finish->play();
                                   msg.accept();
                               }
                           });
@@ -507,8 +516,6 @@ void MainWindow::WriteSettingsFile()
     int current_limit_left = ui->left_travel_limit_spinBox->value();
     int default_out_contact = ui->default_out_contact_spinBox->value();
     int default_in_contact = ui->default_in_contact_spinBox->value();
-    qDebug()<<"id="<<controller_id;
-    qDebug()<<"id="<< "controller_id"+QString::number(controller_id).toUtf8() ;
 
     QSettings* settings = new QSettings(QDir::currentPath() + "/actuator_config.ini", QSettings::IniFormat);
     settings->setValue("controller_id"+QString::number(controller_id).toUtf8(), controller_id);
@@ -589,7 +596,8 @@ void MainWindow::MoveToPosition(int position_value)
                                              if(ui->current_position_textBrowser->toPlainText().toInt()==position_value) break;
                                              MoveToPosition(position_value);
                                          }
-                                         msg.accept();
+                                         sound_finish->play();
+                                         msg.accept();                               
                                      }
                                  });
                 WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().POSITION_RELATIVE+QByteArray::number(relative_value));
@@ -628,6 +636,7 @@ void MainWindow::MoveToPosition(int position_value)
                                              }
                                              MoveToPosition(position_value);
                                          }
+                                         sound_finish->play();
                                          msg.accept();
                                      }
                                  });
