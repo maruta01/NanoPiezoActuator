@@ -1,4 +1,4 @@
-QT       += core gui serialport
+QT       += core gui serialport multimedia
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
@@ -11,13 +11,11 @@ CONFIG += c++17
 SOURCES += \
     dialogsettingport.cpp \
     main.cpp \
-    mainwindow.cpp \
-    wokerthead.cpp
+    mainwindow.cpp
 
 HEADERS += \
     dialogsettingport.h \
-    mainwindow.h \
-    wokerthead.h
+    mainwindow.h
 
 FORMS += \
     dialogsettingport.ui \
@@ -27,3 +25,6 @@ FORMS += \
 qnx: target.path = /tmp/$${TARGET}/bin
 else: unix:!android: target.path = /opt/$${TARGET}/bin
 !isEmpty(target.path): INSTALLS += target
+
+RESOURCES += \
+    res.qrc
