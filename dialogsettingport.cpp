@@ -1,8 +1,8 @@
 #include "dialogsettingport.h"
 #include "ui_dialogsettingport.h"
-#include <QtSerialPort/QSerialPort>
+
 #include <QSerialPortInfo>
-#include <QDebug>
+#include <QtSerialPort/QSerialPort>
 
 DialogSettingPort::DialogSettingPort(QWidget *parent) :
     QDialog(parent),
@@ -14,8 +14,6 @@ DialogSettingPort::DialogSettingPort(QWidget *parent) :
         if(port.portName().toStdString().find("ttyUSB")==0){
             ui->com_comboBox->addItem(port.portName());
         }
-//        ui->com_comboBox->addItem(port.portName());
-
     }
 }
 

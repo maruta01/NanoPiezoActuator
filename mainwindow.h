@@ -39,7 +39,8 @@ private slots:
     void InitContorllerConnection();
     void MoveToPosition(int position_value);
     void ReadSettingsFile();
-    void ShowWaringLabel(bool);
+    void SetPositiontoZero();
+    void ShowWaringLabel(bool); 
     void UpdatePosition();
     QByteArray WriteDataToSerialResponse(QByteArray command,bool query);
     void WriteSettingsFile();
@@ -54,16 +55,10 @@ private slots:
     void on_save_setting_pushButton_clicked();
     void on_move_postition_pushButton_clicked();
     void on_default_in_contact_pushButton_clicked();
-
-
     void on_default_out_contact_pushButton_clicked();
-
     void on_default_in_contact_checkBox_stateChanged(int arg1);
-
     void on_default_out_contact_checkBox_stateChanged(int arg1);
-
     void on_right_travel_limit_checkBox_stateChanged(int arg1);
-
     void on_left_travel_limit_checkBox_stateChanged(int arg1);
 
 private:

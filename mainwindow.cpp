@@ -1,21 +1,19 @@
+#include "dialogsettingport.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
-#include "dialogsettingport.h"
-#include <QtSerialPort/QSerialPort>
-#include <QSerialPortInfo>
-#include <QMessageBox>
-#include <QDebug>
-#include <QProcess>
 #include <unistd.h>
-#include <QtCore/QCoreApplication>
-#include <unistd.h>
-#include <QProgressDialog>
-#include <QTimer>
-#include <QSettings>
+
 #include <QDir>
 #include <QKeyEvent>
+#include <QMessageBox>
+#include <QProcess>
+#include <QProgressDialog>
+#include <QSerialPortInfo>
+#include <QSettings>
 #include <QShortcut>
-
+#include <QTimer>
+#include <QtCore/QCoreApplication>
+#include <QtSerialPort/QSerialPort>
 
 using namespace std;
 
@@ -69,7 +67,7 @@ MainWindow::MainWindow(QWidget *parent)
 MainWindow::~MainWindow()
 {
     serial->close();
-    if(ui->ConnectPortButton->text() == "Connected"){
+    if(serial->isOpen() == false && serial_connect == true){
         WriteSettingsFile();
     }
     delete ui;
@@ -127,12 +125,9 @@ void MainWindow::ConnectSerialport(){
         serial->setStopBits(p.stopBits);
         serial->setFlowControl(p.flowControl);
         if (serial->open(QIODevice::ReadWrite)) {
-            serial_connect=true;
             InitContorllerConnection();
-            ui->ConnectPortButton->setText("Connected");
-            ui->ConnectPortButton->setEnabled(false);
-            sound_finish->play();
-
+            sleep(1);
+            SetPositiontoZero();
         } else {
             QMessageBox::critical(this, QString("Error"), serial->errorString());
         }
@@ -148,20 +143,23 @@ void MainWindow::InitContorllerConnection()
         GetContorllerName();
         sleep(1);
         GetTravelLimit();
-        sleep(1);
         ui->contorl_groupBox->setEnabled(true);
         sleep(1);
         UpdatePosition();
         QShortcut *add_reletive_short_cut = new QShortcut(QKeySequence("Up"), ui->add_relative_pushButton);
         QObject::connect(add_reletive_short_cut, SIGNAL(activated()), ui->add_relative_pushButton, SLOT(click()));
-
         QShortcut *del_reletive_short_cut = new QShortcut(QKeySequence("Down"), ui->add_relative_pushButton);
         QObject::connect(del_reletive_short_cut, SIGNAL(activated()), ui->del_relative_pushButton, SLOT(click()));
-
+        serial_connect=true;
+        ui->ConnectPortButton->setText("Connected");
+        sound_finish->play();
     }
     else{
         QMessageBox::warning(this, QString("Error"), "don't find the controller! try to re-plug the serial port or check the controller.");
+        ui->ConnectPortButton->setText("Disconnected");
+        serial_connect=false;
     }
+    ui->ConnectPortButton->setEnabled(false);
 
 }
 
@@ -394,6 +392,11 @@ void MainWindow::on_set_zero_pushButton_clicked()
      }
 }
 
+void MainWindow::SetPositiontoZero(){
+    int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
+    WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().ZERO_POSITION);
+}
+
 void MainWindow::on_restore_default_pushButton_clicked()
 {
      QMessageBox::StandardButton reply;
@@ -445,8 +448,8 @@ void MainWindow::UpdatePosition(){
       if(new_value == old_value) break;
       old_value = new_value;
     }
-    new_value = new_value+position_history;
-    ui->current_position_textBrowser->setText(QString::number(new_value));
+    int current_value = new_value+position_history;
+    ui->current_position_textBrowser->setText(QString::number(current_value));
 }
 
 
@@ -473,7 +476,7 @@ void MainWindow::on_save_setting_pushButton_clicked()
          int cnt =0;
          QMessageBox msg;
          QTimer cntDown;
-         msg.setText(QString("<p align='center'>waiting for save</p>").arg(cnt));
+         msg.setText(QString("<p align='center'>waiting for save</p>"));
          msg.setStandardButtons(QMessageBox::NoButton);
          msg.setDefaultButton(QMessageBox::Ok);
          msg.setWindowFlags(Qt::BypassWindowManagerHint);
@@ -591,10 +594,15 @@ void MainWindow::MoveToPosition(int position_value)
                 QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown, position_value,this]()->void{
                                      if(--cnt < 0){
                                          cntDown.stop();
+                                         sleep(1);
                                          UpdatePosition();
+                                         sleep(1);
                                          while(1){
-                                             if(ui->current_position_textBrowser->toPlainText().toInt()==position_value) break;
-                                             MoveToPosition(position_value);
+                                             if(ui->current_position_textBrowser->toPlainText().toInt()==position_value){
+                                                 break;
+                                             }else{
+                                                 MoveToPosition(position_value);
+                                             }
                                          }
                                          sound_finish->play();
                                          msg.accept();                               
@@ -629,12 +637,16 @@ void MainWindow::MoveToPosition(int position_value)
                 QObject::connect(&cntDown, &QTimer::timeout, [&msg,&cnt, &cntDown,position_value, this]()->void{
                                      if(--cnt < 0){
                                          cntDown.stop();
+                                         sleep(1);
                                          UpdatePosition();
+                                         sleep(1);
                                          while(1){
                                              if(ui->current_position_textBrowser->toPlainText().toInt()==position_value){
                                                  break;
                                              }
-                                             MoveToPosition(position_value);
+                                             else{
+                                                MoveToPosition(position_value);
+                                             }
                                          }
                                          sound_finish->play();
                                          msg.accept();
