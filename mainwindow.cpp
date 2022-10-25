@@ -126,8 +126,6 @@ void MainWindow::ConnectSerialport(){
         serial->setFlowControl(p.flowControl);
         if (serial->open(QIODevice::ReadWrite)) {
             InitContorllerConnection();
-            sleep(1);
-            SetPositiontoZero();
         } else {
             QMessageBox::critical(this, QString("Error"), serial->errorString());
         }
@@ -143,7 +141,9 @@ void MainWindow::InitContorllerConnection()
         GetContorllerName();
         sleep(1);
         GetTravelLimit();
+        sleep(1);
         ui->contorl_groupBox->setEnabled(true);
+        SetPositiontoZero();
         sleep(1);
         UpdatePosition();
         QShortcut *add_reletive_short_cut = new QShortcut(QKeySequence("Up"), ui->add_relative_pushButton);
