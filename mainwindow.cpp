@@ -85,7 +85,7 @@ void MainWindow::on_ConnectPortButton_clicked()
 {
     if(ui->ConnectPortButton->text()=="Connect"){
         QMessageBox msg;
-        int cnt =1;
+        int cnt =0;
         msg.setText("<p align='center'>Actuator Connecting...</p>");
         msg.setStandardButtons(QMessageBox::NoButton);
         msg.setDefaultButton(QMessageBox::Ok);
@@ -139,12 +139,10 @@ void MainWindow::InitContorllerConnection()
 {
     if(GetContorllerId()){
         GetContorllerName();
-        sleep(1);
+        usleep(500000);
         GetTravelLimit();
-        sleep(1);
         ui->contorl_groupBox->setEnabled(true);
-        SetPositiontoZero();
-        sleep(1);
+        usleep(500000);
         UpdatePosition();
         QShortcut *add_reletive_short_cut = new QShortcut(QKeySequence("Up"), ui->add_relative_pushButton);
         QObject::connect(add_reletive_short_cut, SIGNAL(activated()), ui->add_relative_pushButton, SLOT(click()));
@@ -182,6 +180,8 @@ int MainWindow::GetContorllerId(){
                 controller_map.insert({ num, controller_name[1].toStdString() });
                 ui->contorller_id_comboBox->addItem(QString::number(num));
                 ShowWaringLabel(true);
+                usleep(300000);
+                SetPositiontoZero(num);
             }
             else
             {
@@ -392,22 +392,21 @@ void MainWindow::on_set_zero_pushButton_clicked()
      }
 }
 
-void MainWindow::SetPositiontoZero(){
-    int contoller_id = ui->contorller_id_comboBox->currentText().toInt();
+void MainWindow::SetPositiontoZero(int contoller_id){
     WriteDataToSerialResponse(QByteArray::number(contoller_id) + ascii_command_set().ZERO_POSITION);
 }
 
 void MainWindow::on_restore_default_pushButton_clicked()
 {
      QMessageBox::StandardButton reply;
-      reply = QMessageBox::question(this, "Warning", "Reset controller setting to default ?",
+      reply = QMessageBox::question(this, "Warning", "Reset Configuration setting to default ?",
                                     QMessageBox::Yes|QMessageBox::No);
       if (reply == QMessageBox::Yes) {
 
           int cnt =0;
           QMessageBox msg;
           QTimer cntDown;
-          msg.setText(QString("<p align='center'>waiting for Reset</p>").arg(cnt));
+          msg.setText(QString("<p align='center'>waiting for Reset</p>"));
           msg.setStandardButtons(QMessageBox::NoButton);
           msg.setDefaultButton(QMessageBox::Ok);
           msg.setWindowFlags(Qt::BypassWindowManagerHint);

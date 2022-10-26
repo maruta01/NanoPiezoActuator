@@ -39,7 +39,7 @@ private slots:
     void InitContorllerConnection();
     void MoveToPosition(int position_value);
     void ReadSettingsFile();
-    void SetPositiontoZero();
+    void SetPositiontoZero(int controler_id);
     void ShowWaringLabel(bool); 
     void UpdatePosition();
     QByteArray WriteDataToSerialResponse(QByteArray command,bool query);
