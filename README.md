@@ -1,5 +1,8 @@
 # NanoPiezoActuator
-[Manual](https://github.com/maruta01/NanoPiezoActuator/blob/main/doc/Manual%20Actuator%20NanoPiezo.pdf)
+The NanoPZ utility software provides computer access to the most 
+commonly used PZC200 controller functions, including changing 
+controller configuration, monitoring status, and issuing move 
+commands, [Manual](https://github.com/maruta01/NanoPiezoActuator/blob/main/doc/Manual%20Actuator%20NanoPiezo.pdf)
 
 Deploy application to .Appimage for ready use.  
 
