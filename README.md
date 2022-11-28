@@ -1,4 +1,5 @@
 # NanoPiezoActuator
+[Manual](https://github.com/maruta01/NanoPiezoActuator/blob/main/doc/Manual%20Actuator%20NanoPiezo.pdf)
 
 Deploy application to .Appimage for ready use.  
 
